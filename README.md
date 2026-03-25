@@ -1,13 +1,29 @@
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/api-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
-[![Simulation First](https://img.shields.io/badge/dev-simulation--first-6C757D.svg)](#simulation)
-[![License: MIT](https://img.shields.io/badge/license-MIT-0B7285.svg)](LICENSE)
-[![Status: Alpha](https://img.shields.io/badge/status-alpha-CB6E17.svg)](#project-status)
-[![Safety First](https://img.shields.io/badge/scope-humane%20deterrence-2F855A.svg)](#safety-first)
+<p align="center">
+  <img src="docs/assets/trash-panda-robocop-hero.png" alt="trash-panda Robocop hero" width="720">
+</p>
 
-# trash-panda Robocop
+<h1 align="center">trash-panda Robocop</h1>
 
-![trash-panda Robocop hero](docs/assets/trash-panda-robocop-hero.png)
+<p align="center">
+  Humane Raspberry Pi perimeter robotics for backyard gates, pool boundaries, and late-night raccoon diplomacy.
+</p>
+
+<p align="center">
+  <a href="https://www.python.org/"><img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-3776AB.svg"></a>
+  <a href="https://fastapi.tiangolo.com/"><img alt="FastAPI" src="https://img.shields.io/badge/api-FastAPI-009688.svg"></a>
+  <a href="#simulation"><img alt="Simulation First" src="https://img.shields.io/badge/dev-simulation--first-6C757D.svg"></a>
+  <a href="LICENSE"><img alt="License MIT" src="https://img.shields.io/badge/license-MIT-0B7285.svg"></a>
+  <a href="#project-status"><img alt="Status Alpha" src="https://img.shields.io/badge/status-alpha-CB6E17.svg"></a>
+  <a href="#safety-first"><img alt="Safety First" src="https://img.shields.io/badge/scope-humane%20deterrence-2F855A.svg"></a>
+</p>
+
+<p align="center">
+  <a href="#quickstart"><strong>Quickstart</strong></a> ·
+  <a href="#architecture-summary"><strong>Architecture</strong></a> ·
+  <a href="#public-facing-api"><strong>API</strong></a> ·
+  <a href="#documentation-map"><strong>Docs</strong></a> ·
+  <a href="#contributing"><strong>Contributing</strong></a>
+</p>
 
 `trash-panda Robocop` is the public-facing identity for the `raccoon_guardian` codebase: a production-minded, safety-first starter kit for a humane perimeter deterrence system aimed at nighttime wildlife entry events near a backyard gate or pool boundary. It is designed for Raspberry Pi class hardware, but the first-class development path is simulation, image capture, and mock hardware so the repo is useful before a camera, pump, light, or speaker is ever attached.
 
