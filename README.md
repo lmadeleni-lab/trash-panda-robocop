@@ -7,7 +7,7 @@
 
 # trash-panda Robocop
 
-![trash-panda Robocop hero](docs/assets/trash-panda-robocop-hero.svg)
+![trash-panda Robocop hero](docs/assets/trash-panda-robocop-hero.png)
 
 `trash-panda Robocop` is the public-facing identity for the `raccoon_guardian` codebase: a production-minded, safety-first starter kit for a humane perimeter deterrence system aimed at nighttime wildlife entry events near a backyard gate or pool boundary. It is designed for Raspberry Pi class hardware, but the first-class development path is simulation, image capture, and mock hardware so the repo is useful before a camera, pump, light, or speaker is ever attached.
 
