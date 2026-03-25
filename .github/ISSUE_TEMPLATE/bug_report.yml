@@ -1,0 +1,27 @@
+name: Bug Report
+description: Report a defect, regression, or unsafe behavior.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Steps, config, and environment details.
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety impact
+      description: Note if humans, pets, nuisance, or bypass risks are involved.
+    validations:
+      required: true
+

@@ -1,0 +1,42 @@
+name: raccoon-guardian
+environment: local
+database_path: data/raccoon_guardian.db
+simulation_mode: true
+armed_default: true
+selected_strategy: LIGHT_ONLY
+logging:
+  level: INFO
+perception:
+  detector_backend: mock
+  min_confidence: 0.45
+  capture_dir: data/captures
+  save_debug_frames: true
+  max_saved_frames: 250
+  camera_source: 0
+safety:
+  timezone: America/New_York
+  armed_hours_start: "20:30:00"
+  armed_hours_end: "06:30:00"
+  cooldown_s: 45
+  max_water_duration_s: 1.5
+  max_sound_duration_s: 1.0
+  max_pan_degrees: 25
+  manual_disable: false
+  allow_test_actuation: false
+zones:
+  - zone_id: gate_entry
+    display_name: Gate Entry Zone
+    deterrence_enabled: true
+    polygon:
+      - [0.05, 0.40]
+      - [0.35, 0.40]
+      - [0.35, 0.95]
+      - [0.05, 0.95]
+  - zone_id: backyard_protected
+    display_name: Backyard Protected Zone
+    deterrence_enabled: true
+    polygon:
+      - [0.36, 0.25]
+      - [0.95, 0.25]
+      - [0.95, 0.98]
+      - [0.36, 0.98]

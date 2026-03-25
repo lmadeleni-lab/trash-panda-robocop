@@ -1,0 +1,42 @@
+name: raccoon-guardian-sim
+environment: simulation
+database_path: data/raccoon_guardian_sim.db
+simulation_mode: true
+armed_default: true
+selected_strategy: LIGHT_SOUND
+logging:
+  level: DEBUG
+perception:
+  detector_backend: frame_difference
+  min_confidence: 0.35
+  capture_dir: data/captures-sim
+  save_debug_frames: true
+  max_saved_frames: 250
+  camera_source: 0
+safety:
+  timezone: America/New_York
+  armed_hours_start: "18:00:00"
+  armed_hours_end: "08:00:00"
+  cooldown_s: 15
+  max_water_duration_s: 1.2
+  max_sound_duration_s: 0.8
+  max_pan_degrees: 20
+  manual_disable: false
+  allow_test_actuation: true
+zones:
+  - zone_id: gate_entry
+    display_name: Gate Entry Zone
+    deterrence_enabled: true
+    polygon:
+      - [0.08, 0.35]
+      - [0.34, 0.35]
+      - [0.34, 0.92]
+      - [0.08, 0.92]
+  - zone_id: backyard_protected
+    display_name: Backyard Protected Zone
+    deterrence_enabled: true
+    polygon:
+      - [0.35, 0.20]
+      - [0.96, 0.20]
+      - [0.96, 0.98]
+      - [0.35, 0.98]

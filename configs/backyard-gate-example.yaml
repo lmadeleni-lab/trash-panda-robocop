@@ -1,0 +1,42 @@
+name: raccoon-guardian-backyard-gate
+environment: backyard-gate
+database_path: data/backyard_gate.db
+simulation_mode: false
+armed_default: true
+selected_strategy: LIGHT_WATER
+logging:
+  level: INFO
+perception:
+  detector_backend: external_model
+  min_confidence: 0.55
+  capture_dir: data/captures-backyard
+  save_debug_frames: true
+  max_saved_frames: 500
+  camera_source: 0
+safety:
+  timezone: America/New_York
+  armed_hours_start: "21:00:00"
+  armed_hours_end: "06:00:00"
+  cooldown_s: 60
+  max_water_duration_s: 1.0
+  max_sound_duration_s: 0.6
+  max_pan_degrees: 15
+  manual_disable: false
+  allow_test_actuation: false
+zones:
+  - zone_id: gate_entry
+    display_name: Pool Gate Entry
+    deterrence_enabled: true
+    polygon:
+      - [0.12, 0.42]
+      - [0.30, 0.42]
+      - [0.30, 0.90]
+      - [0.12, 0.90]
+  - zone_id: backyard_protected
+    display_name: Pool Deck Boundary
+    deterrence_enabled: true
+    polygon:
+      - [0.31, 0.28]
+      - [0.94, 0.28]
+      - [0.94, 0.97]
+      - [0.31, 0.97]
