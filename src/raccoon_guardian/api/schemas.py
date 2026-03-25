@@ -11,6 +11,12 @@ class HealthResponse(BaseModel):
     state: str
 
 
+class ReadinessResponse(BaseModel):
+    status: str
+    state: str
+    checks: dict[str, bool]
+
+
 class MockEventRequest(DetectionEvent):
     pass
 

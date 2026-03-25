@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 from raccoon_guardian.control.controller import Controller
+from raccoon_guardian.control.scheduler import RuntimeScheduler
 from raccoon_guardian.domain.enums import StrategyName, TargetClass
 from raccoon_guardian.domain.models import (
+    ActuationResult,
     EncounterRecord,
     NightlySummary,
     NotificationResult,
+    SchedulerStatus,
     StrategyDefinition,
+    SystemStatus,
 )
 from raccoon_guardian.notifications.slack import SlackNotifier
 from raccoon_guardian.reporting.morning_summary import MorningSummaryService
@@ -25,12 +31,14 @@ class BoundedStrategyTools:
         timezone_name: str,
         slack_notifier: SlackNotifier,
         escalation_failure_threshold: int,
+        scheduler: RuntimeScheduler,
     ) -> None:
         self.controller = controller
         self.repository = repository
         self.strategy_catalog = strategy_catalog
         self.evaluator = evaluator
         self.timezone_name = timezone_name
+        self.scheduler = scheduler
         self.summary_service = MorningSummaryService(
             repository=repository,
             evaluator=evaluator,
@@ -52,7 +60,12 @@ class BoundedStrategyTools:
         return self.summary_service.build_summary(local_date)
 
     def deliver_morning_summary(self, local_date: str) -> NotificationResult:
-        return self.summary_service.deliver_summary(local_date)
+        attempted_at = datetime.now(UTC)
+        self.scheduler.mark_morning_summary_attempt(attempted_at)
+        result = self.summary_service.deliver_summary(local_date)
+        if result.delivered:
+            self.scheduler.mark_morning_summary_delivered(attempted_at)
+        return result
 
     def maybe_escalate_failed_deterrence(self, limit: int = 20) -> NotificationResult:
         recent = self.repository.recent_outcomes(limit)
@@ -66,3 +79,34 @@ class BoundedStrategyTools:
             fallback=self.controller.selected_strategy,
             overrides=self.controller.config.target_strategy_preferences,
         )
+
+    def scheduler_status(self) -> SchedulerStatus:
+        return self.scheduler.status(datetime.now(UTC))
+
+    def system_status(self) -> SystemStatus:
+        return SystemStatus(
+            environment=self.controller.config.environment,
+            state=self.controller.state.value,
+            armed=self.controller.armed,
+            selected_strategy=self.controller.selected_strategy,
+            last_action_at=self.controller.last_action_at.isoformat()
+            if self.controller.last_action_at
+            else None,
+            simulation_mode=self.controller.config.simulation_mode,
+            detector_backend=self.controller.config.perception.detector_backend,
+            api_key_enabled=self.controller.config.security.api_key_enabled,
+            slack_enabled=self.controller.config.notifications.slack_enabled,
+            morning_summary_enabled=self.controller.config.morning_summary.enabled,
+            guard_rounds_enabled=self.controller.config.guard_rounds.enabled,
+            background_scheduler_enabled=self.controller.config.runtime.background_scheduler_enabled,
+        )
+
+    def run_guard_round(self) -> list[ActuationResult]:
+        attempted_at = datetime.now(UTC)
+        self.scheduler.mark_guard_round_attempt(attempted_at)
+        results = self.controller.run_guard_round(
+            self.controller.config.guard_rounds.presets,
+            now=attempted_at,
+        )
+        self.scheduler.mark_guard_round_run(attempted_at)
+        return results

@@ -45,6 +45,7 @@ def test_api_summary_endpoint(tmp_path: Path) -> None:
     assert response.json()["date"] == "2026-01-14"
     assert "failed_deterrence_events" in response.json()
     assert "droppings_map" in response.json()
+    assert "droppings_heatmap" in response.json()
 
 
 def test_api_strategy_recommendations_and_delivery_endpoints(tmp_path: Path) -> None:
@@ -65,3 +66,44 @@ def test_api_strategy_recommendations_and_delivery_endpoints(tmp_path: Path) -> 
     escalation = client.post("/alerts/escalate")
     assert escalation.status_code == 200
     assert "detail" in escalation.json()
+
+
+def test_api_redacts_secrets_and_enforces_api_key(tmp_path: Path) -> None:
+    config = load_config(Path("configs/simulation.yaml")).model_copy(
+        update={"database_path": tmp_path / "secure.db"}
+    )
+    config.security.api_key_enabled = True
+    config.security.api_key = "topsecret"
+    config.security.allow_unsafe_local_without_key = False
+    client = TestClient(create_app(config=config))
+
+    config_response = client.get("/config")
+    assert config_response.status_code == 200
+    assert config_response.json()["security"]["api_key"] == "***"
+
+    unauthorized = client.post("/arm")
+    assert unauthorized.status_code == 401
+
+    authorized = client.post("/arm", headers={"x-api-key": "topsecret"})
+    assert authorized.status_code == 200
+
+
+def test_api_status_and_scheduler_endpoints(tmp_path: Path) -> None:
+    config = load_config(Path("configs/simulation.yaml")).model_copy(
+        update={"database_path": tmp_path / "status.db"}
+    )
+    client = TestClient(create_app(config=config))
+
+    readiness = client.get("/health/ready")
+    assert readiness.status_code == 200
+    assert readiness.json()["status"] in {"ready", "degraded"}
+
+    status = client.get("/status")
+    assert status.status_code == 200
+    assert "selected_strategy" in status.json()
+    assert "background_scheduler_enabled" in status.json()
+
+    scheduler = client.get("/scheduler")
+    assert scheduler.status_code == 200
+    assert "guard_round_presets" in scheduler.json()
+    assert "last_guard_round_attempt_local" in scheduler.json()

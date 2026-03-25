@@ -6,8 +6,10 @@ from raccoon_guardian.actuators.base import ActuatorHub
 from raccoon_guardian.config import AppConfig
 from raccoon_guardian.control.cooldown import CooldownGate
 from raccoon_guardian.control.scheduler import ArmingScheduler
-from raccoon_guardian.domain.enums import StrategyName, SystemState, TargetClass, ZoneId
+from raccoon_guardian.domain.enums import ActionType, StrategyName, SystemState, TargetClass, ZoneId
 from raccoon_guardian.domain.models import (
+    ActuationResult,
+    BoundedAction,
     DecisionTraceEntry,
     DetectionEvent,
     EncounterRecord,
@@ -183,3 +185,22 @@ class Controller:
             return self.process_detection(detection)
         finally:
             self.selected_strategy = previous_strategy
+
+    def run_guard_round(
+        self, presets: list[str], *, now: datetime | None = None
+    ) -> list[ActuationResult]:
+        current_time = now or datetime.now(UTC)
+        if self.config.safety.manual_disable:
+            msg = "guard rounds are disabled while manual disable is active"
+            raise ValueError(msg)
+        if not self.scheduler.is_armed_time(current_time):
+            msg = "guard rounds may only run during the configured arm window"
+            raise ValueError(msg)
+        results: list[ActuationResult] = []
+        for preset in presets:
+            results.append(
+                self.actuator_hub.execute(
+                    BoundedAction(action_type=ActionType.PAN, preset=preset, degrees=0)
+                )
+            )
+        return results

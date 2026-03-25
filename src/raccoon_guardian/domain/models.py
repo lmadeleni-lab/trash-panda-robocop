@@ -123,6 +123,34 @@ class HeatmapCell(BaseModel):
     flagged_events: int
 
 
+class SchedulerStatus(BaseModel):
+    scheduler_enabled: bool
+    current_local_time: str
+    next_morning_summary_local: str | None
+    last_morning_summary_local: str | None
+    last_morning_summary_attempt_local: str | None
+    guard_rounds_enabled: bool
+    next_guard_round_local: str | None
+    last_guard_round_local: str | None
+    last_guard_round_attempt_local: str | None
+    guard_round_presets: list[str]
+
+
+class SystemStatus(BaseModel):
+    environment: str
+    state: str
+    armed: bool
+    selected_strategy: StrategyName
+    last_action_at: str | None
+    simulation_mode: bool
+    detector_backend: str
+    api_key_enabled: bool
+    slack_enabled: bool
+    morning_summary_enabled: bool
+    guard_rounds_enabled: bool
+    background_scheduler_enabled: bool
+
+
 class NightlySummary(BaseModel):
     date: str
     total_events: int

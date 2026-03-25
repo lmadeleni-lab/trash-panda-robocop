@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, time
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -14,6 +15,12 @@ class LoggingConfig(BaseModel):
     level: str = "INFO"
 
 
+class SecurityConfig(BaseModel):
+    api_key_enabled: bool = False
+    api_key: str | None = None
+    allow_unsafe_local_without_key: bool = True
+
+
 class NotificationConfig(BaseModel):
     slack_enabled: bool = False
     slack_webhook_url: str | None = None
@@ -26,6 +33,17 @@ class MorningSummaryConfig(BaseModel):
     enabled: bool = True
     delivery_hour_local: int = Field(default=7, ge=0, le=23)
     delivery_minute_local: int = Field(default=30, ge=0, le=59)
+
+
+class GuardRoundConfig(BaseModel):
+    enabled: bool = True
+    interval_minutes: int = Field(default=30, ge=5, le=240)
+    presets: list[str] = Field(default_factory=lambda: ["gate_watch", "pool_watch"])
+
+
+class RuntimeConfig(BaseModel):
+    background_scheduler_enabled: bool = False
+    scheduler_poll_interval_s: float = Field(default=30.0, ge=5.0, le=300.0)
 
 
 class PerceptionConfig(BaseModel):
@@ -83,8 +101,11 @@ class AppConfig(BaseModel):
     selected_strategy: StrategyName = StrategyName.LIGHT_ONLY
     target_strategy_preferences: dict[TargetClass, StrategyName] = Field(default_factory=dict)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    security: SecurityConfig = Field(default_factory=SecurityConfig)
     notifications: NotificationConfig = Field(default_factory=NotificationConfig)
     morning_summary: MorningSummaryConfig = Field(default_factory=MorningSummaryConfig)
+    guard_rounds: GuardRoundConfig = Field(default_factory=GuardRoundConfig)
+    runtime: RuntimeConfig = Field(default_factory=RuntimeConfig)
     perception: PerceptionConfig = Field(default_factory=PerceptionConfig)
     safety: SafetyConfig
     zones: list[ZoneConfig]
@@ -101,6 +122,18 @@ class AppConfig(BaseModel):
     def zone_map(self) -> dict[ZoneId, ZoneConfig]:
         return {zone.zone_id: zone for zone in self.zones}
 
+    def public_config(self) -> dict[str, object]:
+        payload = self.model_dump(mode="json")
+        security = payload.get("security")
+        if isinstance(security, dict) and "api_key" in security:
+            security["api_key"] = "***" if security["api_key"] else None
+        notifications = payload.get("notifications")
+        if isinstance(notifications, dict) and "slack_webhook_url" in notifications:
+            notifications["slack_webhook_url"] = (
+                "***" if notifications["slack_webhook_url"] else None
+            )
+        return payload
+
 
 def project_root() -> Path:
     return Path(__file__).resolve().parents[2]
@@ -114,4 +147,14 @@ def load_config(path: Path | str | None = None) -> AppConfig:
     config_path = Path(path) if path is not None else default_config_path()
     with config_path.open("r", encoding="utf-8") as handle:
         raw = yaml.safe_load(handle)
+    if isinstance(raw, dict):
+        security = raw.setdefault("security", {})
+        notifications = raw.setdefault("notifications", {})
+        env_api_key = os.getenv("RG_API_KEY")
+        env_slack_webhook = os.getenv("RG_SLACK_WEBHOOK_URL")
+        if env_api_key:
+            security["api_key"] = env_api_key
+            security["api_key_enabled"] = True
+        if env_slack_webhook:
+            notifications["slack_webhook_url"] = env_slack_webhook
     return AppConfig.model_validate(raw)

@@ -6,6 +6,7 @@ from fastapi import Request
 
 from raccoon_guardian.config import AppConfig
 from raccoon_guardian.control.controller import Controller
+from raccoon_guardian.control.scheduler import RuntimeScheduler
 from raccoon_guardian.notifications.slack import SlackNotifier
 from raccoon_guardian.storage.repository import EventRepository
 from raccoon_guardian.strategies.catalog import StrategyCatalog
@@ -20,6 +21,7 @@ class AppContainer:
     repository: EventRepository
     strategy_catalog: StrategyCatalog
     evaluator: StrategyEvaluator
+    scheduler: RuntimeScheduler
     slack_notifier: SlackNotifier
     tools: BoundedStrategyTools
 

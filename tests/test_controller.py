@@ -83,3 +83,22 @@ def test_controller_safe_parks_on_bear_detection(tmp_path: Path) -> None:
     assert controller.armed is False
     assert controller.state.value == "DISARMED"
     assert actuator_hub.history[-1].detail == "mock stop_all"
+
+
+def test_controller_runs_guard_round_with_presets(tmp_path: Path) -> None:
+    config = load_config(Path("configs/simulation.yaml")).model_copy(
+        update={"database_path": tmp_path / "controller-guard.db"}
+    )
+    actuator_hub = MockActuatorHub()
+    controller = Controller(
+        config=config,
+        repository=EventRepository(config.database_path),
+        actuator_hub=actuator_hub,
+        strategy_catalog=StrategyCatalog(),
+    )
+    results = controller.run_guard_round(
+        ["gate_watch", "pool_watch"],
+        now=datetime(2026, 1, 15, 2, 15, tzinfo=UTC),
+    )
+    assert len(results) == 2
+    assert all(result.action_type.value == "pan" for result in results)

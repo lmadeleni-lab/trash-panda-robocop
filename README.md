@@ -21,6 +21,7 @@
   <a href="#quickstart"><strong>Quickstart</strong></a> ·
   <a href="#architecture-summary"><strong>Architecture</strong></a> ·
   <a href="#public-facing-api"><strong>API</strong></a> ·
+  <a href="#production-hardening"><strong>Production</strong></a> ·
   <a href="#documentation-map"><strong>Docs</strong></a> ·
   <a href="#contributing"><strong>Contributing</strong></a>
 </p>
@@ -98,6 +99,17 @@ This repository is currently `alpha`.
 - The default actuator path is still mock-first by design
 - The repo is intended as an open-source starter kit, not a finished consumer product
 
+## Production Hardening
+
+Recent repo upgrades aimed at production-like staging:
+
+- API key protection for mutating endpoints
+- secret-aware config redaction for public config responses
+- readiness, status, and scheduler endpoints
+- supervised background scheduler for morning summaries and guard rounds
+- Slack escalation path and morning summary delivery hooks
+- deployment and production-checklist docs for Raspberry Pi staging
+
 ## Safety First
 
 The repository assumes a safety-first operating model:
@@ -149,7 +161,7 @@ pie showData
 | Safety | human/pet exclusion, geofence, arm window, cooldown, actuation caps | field validation on physical deployments |
 | Actuation | bounded interfaces and mock hub, fixed-base safe-park behavior | real GPIO relay, audio, water, and servo drivers |
 | Evaluation | SQLite encounter store, nightly ranking, morning summary payloads | richer longitudinal adaptation and dashboards |
-| Notifications | Slack delivery hooks and escalation path | production secret management and on-device scheduler |
+| Notifications | Slack delivery hooks, escalation path, autonomous summary loop | production secret rotation and external alert routing |
 
 ## Architecture Summary
 
@@ -206,6 +218,13 @@ make run
 ```
 
 The default API will listen on `127.0.0.1:8000`.
+
+For a production-like local run, set:
+
+```bash
+export RG_API_KEY=replace-with-a-long-random-secret
+export RG_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+```
 
 ### 3. Run the night simulation
 
@@ -264,6 +283,9 @@ The relevant modules live under [src/raccoon_guardian/perception/](/Users/lauren
 The local FastAPI service includes:
 
 - `GET /health`
+- `GET /health/ready`
+- `GET /status`
+- `GET /scheduler`
 - `GET /config`
 - `POST /arm`
 - `POST /disarm`
@@ -275,6 +297,7 @@ The local FastAPI service includes:
 - `GET /summary/nightly`
 - `POST /summary/morning/deliver`
 - `POST /alerts/escalate`
+- `POST /guard-rounds/run`
 - `POST /actuate/test` when explicitly enabled in config
 
 ## Hardware Philosophy
@@ -322,7 +345,9 @@ It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md
 - [docs/architecture.md](/Users/laurent/Development/trash-panda-robocop/docs/architecture.md): system and deployment diagrams
 - [docs/hardware.md](/Users/laurent/Development/trash-panda-robocop/docs/hardware.md): Raspberry Pi hardware plan and BOM
 - [docs/accessories.md](/Users/laurent/Development/trash-panda-robocop/docs/accessories.md): recommended and experimental accessory matrix
+- [docs/deployment.md](/Users/laurent/Development/trash-panda-robocop/docs/deployment.md): Raspberry Pi deployment and service setup
 - [docs/operations.md](/Users/laurent/Development/trash-panda-robocop/docs/operations.md): operating modes, guard rounds, summaries, and escalation
+- [docs/production-checklist.md](/Users/laurent/Development/trash-panda-robocop/docs/production-checklist.md): pre-deployment checklist
 - [docs/safety-policy.md](/Users/laurent/Development/trash-panda-robocop/docs/safety-policy.md): immutable safety constraints
 - [docs/opencclaw-integration.md](/Users/laurent/Development/trash-panda-robocop/docs/opencclaw-integration.md): bounded external strategy control
 - [docs/strategy-evaluation.md](/Users/laurent/Development/trash-panda-robocop/docs/strategy-evaluation.md): scoring and adaptation loop

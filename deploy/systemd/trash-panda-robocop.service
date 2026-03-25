@@ -1,0 +1,18 @@
+[Unit]
+Description=trash-panda Robocop API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=trashpanda
+Group=trashpanda
+WorkingDirectory=/opt/trash-panda-robocop
+EnvironmentFile=/etc/trash-panda-robocop.env
+Environment=RG_CONFIG_PATH=configs/backyard-gate-example.yaml
+ExecStart=/opt/trash-panda-robocop/.venv/bin/python -m raccoon_guardian.app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -9,6 +9,10 @@ target_strategy_preferences:
   unknown: LIGHT_ONLY
 logging:
   level: INFO
+security:
+  api_key_enabled: true
+  api_key:
+  allow_unsafe_local_without_key: false
 notifications:
   slack_enabled: false
   slack_webhook_url:
@@ -19,6 +23,16 @@ morning_summary:
   enabled: true
   delivery_hour_local: 7
   delivery_minute_local: 15
+guard_rounds:
+  enabled: true
+  interval_minutes: 20
+  presets:
+    - gate_watch
+    - pool_watch
+    - deck_watch
+runtime:
+  background_scheduler_enabled: true
+  scheduler_poll_interval_s: 30
 perception:
   detector_backend: external_model
   min_confidence: 0.55
