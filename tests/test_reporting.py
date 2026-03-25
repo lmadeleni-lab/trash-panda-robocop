@@ -51,6 +51,7 @@ def test_morning_summary_service_builds_summary_and_noops_without_slack(tmp_path
     assert summary.total_events == 1
     assert summary.target_breakdown[0].target_class == TargetClass.RACCOON
     assert summary.droppings_map[0].zone_id == ZoneId.GATE_ENTRY
+    assert summary.droppings_heatmap[0].intensity == "low"
     assert result.delivered is False
 
 

@@ -6,6 +6,7 @@ from raccoon_guardian.domain.enums import ZoneId
 from raccoon_guardian.domain.models import (
     DroppingsZoneSummary,
     EncounterRecord,
+    HeatmapCell,
     NightlySummary,
     OutcomeMetrics,
     StrategyScore,
@@ -14,6 +15,16 @@ from raccoon_guardian.domain.models import (
 
 
 class StrategyEvaluator:
+    @staticmethod
+    def heat_level(count: int) -> str:
+        if count <= 0:
+            return "none"
+        if count == 1:
+            return "low"
+        if count == 2:
+            return "medium"
+        return "high"
+
     def deterrence_failed(self, encounter: EncounterRecord) -> bool:
         if not encounter.decision.allowed or encounter.outcome is None:
             return False
@@ -96,6 +107,15 @@ class StrategyEvaluator:
             DroppingsZoneSummary(zone_id=ZoneId(zone_value), flagged_events=count)
             for zone_value, count in droppings_rollup.items()
         ]
+        heatmap_zones = [ZoneId.GATE_ENTRY, ZoneId.BACKYARD_PROTECTED]
+        droppings_heatmap = [
+            HeatmapCell(
+                zone_id=zone_id,
+                flagged_events=droppings_rollup.get(zone_id.value, 0),
+                intensity=self.heat_level(droppings_rollup.get(zone_id.value, 0)),
+            )
+            for zone_id in heatmap_zones
+        ]
         return NightlySummary(
             date=date,
             total_events=len(encounters),
@@ -104,6 +124,7 @@ class StrategyEvaluator:
             failed_deterrence_events=failed_deterrence_events,
             target_breakdown=list({item.target_class: item for item in target_breakdown}.values()),
             droppings_map=list({item.zone_id: item for item in droppings_map}.values()),
+            droppings_heatmap=droppings_heatmap,
             recommended_focus_strategy=rankings[0].strategy if rankings else None,
             rankings=rankings,
         )

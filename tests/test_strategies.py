@@ -118,3 +118,6 @@ def test_strategy_evaluator_summary_includes_droppings_map() -> None:
     summary = evaluator.summarize("2026-01-15", encounters)
     assert summary.droppings_map[0].zone_id == ZoneId.GATE_ENTRY
     assert summary.droppings_map[0].flagged_events == 1
+    assert summary.droppings_heatmap[0].zone_id == ZoneId.GATE_ENTRY
+    assert summary.droppings_heatmap[0].intensity == "low"
+    assert summary.droppings_heatmap[1].zone_id == ZoneId.BACKYARD_PROTECTED

@@ -117,6 +117,12 @@ class DroppingsZoneSummary(BaseModel):
     flagged_events: int
 
 
+class HeatmapCell(BaseModel):
+    zone_id: ZoneId
+    intensity: str
+    flagged_events: int
+
+
 class NightlySummary(BaseModel):
     date: str
     total_events: int
@@ -125,6 +131,7 @@ class NightlySummary(BaseModel):
     failed_deterrence_events: int
     target_breakdown: list[TargetBreakdown]
     droppings_map: list[DroppingsZoneSummary]
+    droppings_heatmap: list[HeatmapCell]
     recommended_focus_strategy: StrategyName | None = None
     rankings: list[StrategyScore]
 

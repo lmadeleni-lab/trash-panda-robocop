@@ -45,6 +45,18 @@ class MorningSummaryService:
                 f"{item.zone_id.value}:{item.flagged_events}" for item in summary.droppings_map
             )
             lines.append(f"Cleanup map: {droppings}")
+        if summary.droppings_heatmap:
+            lines.extend(
+                [
+                    "Cleanup heatmap:",
+                    "| zone | count | level |",
+                    "| --- | ---: | --- |",
+                    *[
+                        f"| {item.zone_id.value} | {item.flagged_events} | {item.intensity} |"
+                        for item in summary.droppings_heatmap
+                    ],
+                ]
+            )
         return self.slack_notifier.send_message("\n".join(lines))
 
     def escalate_if_needed(
