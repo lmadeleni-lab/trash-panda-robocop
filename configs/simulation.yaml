@@ -4,8 +4,21 @@ database_path: data/raccoon_guardian_sim.db
 simulation_mode: true
 armed_default: true
 selected_strategy: LIGHT_SOUND
+target_strategy_preferences:
+  raccoon: LIGHT_SOUND
+  unknown: LIGHT_ONLY
 logging:
   level: DEBUG
+notifications:
+  slack_enabled: false
+  slack_webhook_url:
+  deliver_morning_summary: false
+  escalation_enabled: false
+  escalation_failure_threshold: 2
+morning_summary:
+  enabled: true
+  delivery_hour_local: 7
+  delivery_minute_local: 30
 perception:
   detector_backend: frame_difference
   min_confidence: 0.35

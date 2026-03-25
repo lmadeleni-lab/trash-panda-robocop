@@ -11,6 +11,7 @@ from raccoon_guardian.api.routes import router
 from raccoon_guardian.config import AppConfig, load_config
 from raccoon_guardian.control.controller import Controller
 from raccoon_guardian.logging import configure_logging
+from raccoon_guardian.notifications.slack import SlackNotifier
 from raccoon_guardian.storage.repository import EventRepository
 from raccoon_guardian.strategies.catalog import StrategyCatalog
 from raccoon_guardian.strategies.evaluator import StrategyEvaluator
@@ -24,6 +25,10 @@ def create_app(config: AppConfig | None = None, config_path: str | None = None) 
     repository = EventRepository(app_config.database_path)
     strategy_catalog = StrategyCatalog()
     evaluator = StrategyEvaluator()
+    slack_notifier = SlackNotifier(
+        webhook_url=app_config.notifications.slack_webhook_url,
+        enabled=app_config.notifications.slack_enabled,
+    )
     controller = Controller(
         config=app_config,
         repository=repository,
@@ -36,6 +41,8 @@ def create_app(config: AppConfig | None = None, config_path: str | None = None) 
         strategy_catalog=strategy_catalog,
         evaluator=evaluator,
         timezone_name=app_config.safety.timezone,
+        slack_notifier=slack_notifier,
+        escalation_failure_threshold=app_config.notifications.escalation_failure_threshold,
     )
 
     app = FastAPI(title="raccoon-guardian", version="0.1.0")
@@ -45,6 +52,7 @@ def create_app(config: AppConfig | None = None, config_path: str | None = None) 
         repository=repository,
         strategy_catalog=strategy_catalog,
         evaluator=evaluator,
+        slack_notifier=slack_notifier,
         tools=tools,
     )
     app.include_router(router)

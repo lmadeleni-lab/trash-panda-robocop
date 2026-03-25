@@ -48,3 +48,23 @@ def test_policy_clamps_water_duration() -> None:
     )
     assert decision.allowed is True
     assert decision.action_plan[0].duration_s == config.safety.max_water_duration_s
+
+
+def test_policy_denies_hazard_detection_and_requests_hide_mode() -> None:
+    config = load_config(Path("configs/simulation.yaml"))
+    policy = SafetyPolicy(config)
+    detection = DetectionEvent(
+        target_detected=True,
+        target_class=TargetClass.BEAR,
+        confidence=0.96,
+        zone_id=ZoneId.GATE_ENTRY,
+        timestamp=datetime(2026, 1, 15, 2, 15, tzinfo=UTC),
+    )
+    decision = policy.evaluate(
+        detection,
+        [BoundedAction(action_type=ActionType.LIGHT)],
+        now=detection.timestamp,
+        last_action_at=None,
+    )
+    assert decision.allowed is False
+    assert any(entry.rule == "hazard_hide_mode" and not entry.allowed for entry in decision.trace)

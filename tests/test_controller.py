@@ -34,6 +34,7 @@ def test_controller_executes_mock_actions_for_raccoon(tmp_path: Path) -> None:
     assert record.decision.allowed is True
     assert len(record.action_results) >= 1
     assert actuator_hub.history
+    assert record.chosen_strategy == config.target_strategy_preferences[TargetClass.RACCOON]
 
 
 def test_controller_denies_pet_event(tmp_path: Path) -> None:
@@ -57,3 +58,28 @@ def test_controller_denies_pet_event(tmp_path: Path) -> None:
     record = controller.process_detection(detection)
     assert record.decision.allowed is False
     assert record.action_results == []
+
+
+def test_controller_safe_parks_on_bear_detection(tmp_path: Path) -> None:
+    config = load_config(Path("configs/simulation.yaml")).model_copy(
+        update={"database_path": tmp_path / "controller-bear.db"}
+    )
+    actuator_hub = MockActuatorHub()
+    controller = Controller(
+        config=config,
+        repository=EventRepository(config.database_path),
+        actuator_hub=actuator_hub,
+        strategy_catalog=StrategyCatalog(),
+    )
+    detection = DetectionEvent(
+        target_detected=True,
+        target_class=TargetClass.BEAR,
+        confidence=0.98,
+        zone_id=ZoneId.GATE_ENTRY,
+        timestamp=datetime(2026, 1, 15, 2, 15, tzinfo=UTC),
+    )
+    record = controller.process_detection(detection)
+    assert record.decision.allowed is False
+    assert controller.armed is False
+    assert controller.state.value == "DISARMED"
+    assert actuator_hub.history[-1].detail == "mock stop_all"

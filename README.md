@@ -27,6 +27,43 @@
 
 `trash-panda Robocop` is the public-facing identity for the `raccoon_guardian` codebase: a production-minded, safety-first starter kit for a humane perimeter deterrence system aimed at nighttime wildlife entry events near a backyard gate or pool boundary. It is designed for Raspberry Pi class hardware, but the first-class development path is simulation, image capture, and mock hardware so the repo is useful before a camera, pump, light, or speaker is ever attached.
 
+## Product Overview
+
+`trash-panda Robocop` is a fixed-base nighttime perimeter robot for gate and pool-edge monitoring. It is designed to notice wildlife entry events, choose from a small catalog of humane deterrence strategies, log what happened, and improve future strategy selection without allowing freeform or unsafe hardware behavior.
+
+### Core Capabilities
+
+- wildlife-aware perimeter detection for gate zones, backyard zones, and pool-edge coverage
+- frame capture, event snapshots, and structured encounter logging
+- humane deterrence outputs including bounded light, short sound cues, and brief water spray
+- optional fixed-base repositioning through small pan or arm-head preset moves, without pursuit
+- stationary guard rounds through scheduled scan presets and camera sweeps
+- hazard-aware safe-park or hide mode for detections such as a bear
+- bounded OpenClaw strategy selection and nightly summary review
+- chat-based local control concepts layered on top of the existing API surface
+- morning summary generation for daily operator review
+- target-specific deterrence preferences by wildlife type
+- Slack escalation when deterrence repeatedly fails
+- simulation-first workflows so the system is useful before hardware is fully attached
+
+### Accessory and Expansion Concepts
+
+- low-light camera for gate and pool-area observation
+- strobe or visible deterrence light
+- weather-resistant speaker for short cue playback
+- bounded water spray aimed at the threshold zone, not directly at animals
+- optional experimental low-force air puff module, treated as non-default and heavily bounded
+- optional pan head or arm-mounted nozzle/light cluster for small preset repositioning only
+- physical kill switch, fused actuator rail, and isolated driver board
+
+### What It Will Not Do
+
+- no harmful contact
+- no trapping or cornering
+- no chase motion or mobile pursuit
+- no arbitrary agent-generated hardware commands
+- no chemicals, heat, lasers, or flame
+
 ## Why This Exists
 
 Backyard gate and pool-boundary monitoring systems often collapse into one of two bad extremes: toy demos that are not auditable, or over-aggressive concepts that should never be deployed. This project aims for the middle ground:
@@ -107,10 +144,11 @@ pie showData
 | Area | Included Now | Still Future Work |
 | --- | --- | --- |
 | API | FastAPI health, config, events, strategies, summaries | auth and remote deployment hardening |
-| Perception | frame packets, snapshots, mock detector, frame-difference detector, model adapter | production wildlife model and privacy-aware redaction |
+| Perception | frame packets, snapshots, mock detector, frame-difference detector, model adapter, pool-zone coverage | production wildlife model and privacy-aware redaction |
 | Safety | human/pet exclusion, geofence, arm window, cooldown, actuation caps | field validation on physical deployments |
-| Actuation | bounded interfaces and mock hub | real GPIO relay, audio, water, and servo drivers |
-| Evaluation | SQLite encounter store and nightly ranking | richer longitudinal adaptation and dashboards |
+| Actuation | bounded interfaces and mock hub, fixed-base safe-park behavior | real GPIO relay, audio, water, and servo drivers |
+| Evaluation | SQLite encounter store, nightly ranking, morning summary payloads | richer longitudinal adaptation and dashboards |
+| Notifications | Slack delivery hooks and escalation path | production secret management and on-device scheduler |
 
 ## Architecture Summary
 
@@ -231,8 +269,11 @@ The local FastAPI service includes:
 - `POST /events/mock`
 - `GET /events`
 - `GET /strategies`
+- `GET /strategies/recommendations`
 - `POST /strategies/select`
 - `GET /summary/nightly`
+- `POST /summary/morning/deliver`
+- `POST /alerts/escalate`
 - `POST /actuate/test` when explicitly enabled in config
 
 ## Hardware Philosophy
@@ -279,6 +320,8 @@ It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md
 - [README.md](/Users/laurent/Development/trash-panda-robocop/README.md): project overview and quickstart
 - [docs/architecture.md](/Users/laurent/Development/trash-panda-robocop/docs/architecture.md): system and deployment diagrams
 - [docs/hardware.md](/Users/laurent/Development/trash-panda-robocop/docs/hardware.md): Raspberry Pi hardware plan and BOM
+- [docs/accessories.md](/Users/laurent/Development/trash-panda-robocop/docs/accessories.md): recommended and experimental accessory matrix
+- [docs/operations.md](/Users/laurent/Development/trash-panda-robocop/docs/operations.md): operating modes, guard rounds, summaries, and escalation
 - [docs/safety-policy.md](/Users/laurent/Development/trash-panda-robocop/docs/safety-policy.md): immutable safety constraints
 - [docs/opencclaw-integration.md](/Users/laurent/Development/trash-panda-robocop/docs/opencclaw-integration.md): bounded external strategy control
 - [docs/strategy-evaluation.md](/Users/laurent/Development/trash-panda-robocop/docs/strategy-evaluation.md): scoring and adaptation loop

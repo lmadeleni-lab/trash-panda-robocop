@@ -103,12 +103,27 @@ class StrategyScore(BaseModel):
     retreat_rate: float
 
 
+class TargetBreakdown(BaseModel):
+    target_class: TargetClass
+    total_events: int
+    acted_events: int
+
+
 class NightlySummary(BaseModel):
     date: str
     total_events: int
     acted_events: int
     denied_events: int
+    failed_deterrence_events: int
+    target_breakdown: list[TargetBreakdown]
+    recommended_focus_strategy: StrategyName | None = None
     rankings: list[StrategyScore]
+
+
+class NotificationResult(BaseModel):
+    delivered: bool
+    channel: str
+    detail: str
 
 
 class EncounterRecord(BaseModel):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -8,9 +8,11 @@ from raccoon_guardian.api.dependencies import AppContainer, get_container
 from raccoon_guardian.api.schemas import (
     HealthResponse,
     MockEventRequest,
+    RecommendationResponse,
     StrategySelectionRequest,
     TestActuationRequest,
 )
+from raccoon_guardian.domain.models import NotificationResult
 
 router = APIRouter()
 
@@ -58,6 +60,10 @@ def list_events(
 def list_strategies(container: AppContainer = Depends(get_container)) -> dict[str, object]:
     return {
         "selected_strategy": container.controller.selected_strategy,
+        "recommendations": {
+            target_class.value: strategy_name.value
+            for target_class, strategy_name in container.tools.recommendation_map().items()
+        },
         "strategies": [
             strategy.model_dump(mode="json")
             for strategy in container.strategy_catalog.list_strategies()
@@ -74,6 +80,16 @@ def select_strategy(
     return {"selected_strategy": strategy.value}
 
 
+@router.get("/strategies/recommendations", response_model=list[RecommendationResponse])
+def strategy_recommendations(
+    container: AppContainer = Depends(get_container),
+) -> list[RecommendationResponse]:
+    return [
+        RecommendationResponse(target_class=target_class, strategy_name=strategy_name)
+        for target_class, strategy_name in container.tools.recommendation_map().items()
+    ]
+
+
 @router.get("/summary/nightly")
 def nightly_summary(
     date: str | None = Query(default=None),
@@ -85,6 +101,27 @@ def nightly_summary(
         current_date = date
     summary = container.tools.get_nightly_summary(current_date)
     return summary.model_dump(mode="json")
+
+
+@router.post("/summary/morning/deliver", response_model=NotificationResult)
+def deliver_morning_summary(
+    date: str | None = Query(default=None),
+    container: AppContainer = Depends(get_container),
+) -> NotificationResult:
+    if date is None:
+        current_date = (
+            datetime.now(container.config.safety.tzinfo).date() - timedelta(days=1)
+        ).isoformat()
+    else:
+        current_date = date
+    return container.tools.deliver_morning_summary(current_date)
+
+
+@router.post("/alerts/escalate", response_model=NotificationResult)
+def escalate_failed_deterrence(
+    container: AppContainer = Depends(get_container),
+) -> NotificationResult:
+    return container.tools.maybe_escalate_failed_deterrence()
 
 
 @router.post("/actuate/test")

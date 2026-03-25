@@ -7,10 +7,20 @@ from raccoon_guardian.domain.models import (
     NightlySummary,
     OutcomeMetrics,
     StrategyScore,
+    TargetBreakdown,
 )
 
 
 class StrategyEvaluator:
+    def deterrence_failed(self, encounter: EncounterRecord) -> bool:
+        if not encounter.decision.allowed or encounter.outcome is None:
+            return False
+        return (
+            not encounter.outcome.retreat_detected
+            or encounter.outcome.returned_within_10_min
+            or encounter.outcome.returned_same_night
+        )
+
     def score_outcome(self, outcome: OutcomeMetrics | None) -> float:
         if outcome is None:
             return 0.0
@@ -57,10 +67,32 @@ class StrategyEvaluator:
     def summarize(self, date: str, encounters: list[EncounterRecord]) -> NightlySummary:
         rankings = self.rank(encounters)
         acted_events = sum(1 for encounter in encounters if encounter.decision.allowed)
+        target_rollup: dict[str, dict[str, int]] = defaultdict(lambda: {"total": 0, "acted": 0})
+        for encounter in encounters:
+            key = encounter.detection.target_class.value
+            target_rollup[key]["total"] += 1
+            if encounter.decision.allowed:
+                target_rollup[key]["acted"] += 1
+        target_breakdown = [
+            TargetBreakdown(
+                target_class=encounter.detection.target_class,
+                total_events=data["total"],
+                acted_events=data["acted"],
+            )
+            for encounter in encounters
+            for key, data in target_rollup.items()
+            if key == encounter.detection.target_class.value
+        ]
+        failed_deterrence_events = sum(
+            1 for encounter in encounters if self.deterrence_failed(encounter)
+        )
         return NightlySummary(
             date=date,
             total_events=len(encounters),
             acted_events=acted_events,
             denied_events=len(encounters) - acted_events,
+            failed_deterrence_events=failed_deterrence_events,
+            target_breakdown=list({item.target_class: item for item in target_breakdown}.values()),
+            recommended_focus_strategy=rankings[0].strategy if rankings else None,
             rankings=rankings,
         )

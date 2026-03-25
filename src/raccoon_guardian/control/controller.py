@@ -64,6 +64,13 @@ class Controller:
         self.selected_strategy = strategy_name
         return strategy_name
 
+    def strategy_for_target(self, target_class: TargetClass) -> StrategyName:
+        return self.strategy_catalog.recommended_strategy_for_target(
+            target_class,
+            fallback=self.selected_strategy,
+            overrides=self.config.target_strategy_preferences,
+        )
+
     def _refresh_cooldown(self, now: datetime) -> None:
         if self.state_machine.state == SystemState.COOLDOWN and self.cooldown.is_ready(
             now, self.last_action_at
@@ -81,6 +88,12 @@ class Controller:
                     message="System is disarmed; actuation denied.",
                 )
             ],
+        )
+
+    @staticmethod
+    def _requested_safe_park(decision: SafetyDecision) -> bool:
+        return any(
+            entry.rule == "hazard_hide_mode" and not entry.allowed for entry in decision.trace
         )
 
     def process_detection(self, detection: DetectionEvent) -> EncounterRecord:
@@ -105,7 +118,8 @@ class Controller:
                 self.state_machine.transition(SystemState.DETECTING)
 
             self.state_machine.transition(SystemState.DECIDING)
-            strategy = self.strategy_catalog.get(self.selected_strategy)
+            strategy_name = self.strategy_for_target(detection.target_class)
+            strategy = self.strategy_catalog.get(strategy_name)
             decision = self.policy.evaluate(
                 detection,
                 strategy.actions,
@@ -114,7 +128,12 @@ class Controller:
             )
 
             if not decision.allowed:
-                self.state_machine.transition(SystemState.IDLE)
+                if self._requested_safe_park(decision):
+                    self.actuator_hub.stop_all()
+                    self.armed = False
+                    self.state_machine.state = SystemState.DISARMED
+                else:
+                    self.state_machine.transition(SystemState.IDLE)
                 record = EncounterRecord(
                     detection=detection,
                     state_before=state_before,

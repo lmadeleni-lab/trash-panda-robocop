@@ -7,11 +7,25 @@ from zoneinfo import ZoneInfo
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from raccoon_guardian.domain.enums import StrategyName, ZoneId
+from raccoon_guardian.domain.enums import StrategyName, TargetClass, ZoneId
 
 
 class LoggingConfig(BaseModel):
     level: str = "INFO"
+
+
+class NotificationConfig(BaseModel):
+    slack_enabled: bool = False
+    slack_webhook_url: str | None = None
+    deliver_morning_summary: bool = False
+    escalation_enabled: bool = False
+    escalation_failure_threshold: int = Field(default=2, ge=1)
+
+
+class MorningSummaryConfig(BaseModel):
+    enabled: bool = True
+    delivery_hour_local: int = Field(default=7, ge=0, le=23)
+    delivery_minute_local: int = Field(default=30, ge=0, le=59)
 
 
 class PerceptionConfig(BaseModel):
@@ -67,7 +81,10 @@ class AppConfig(BaseModel):
     simulation_mode: bool = True
     armed_default: bool = True
     selected_strategy: StrategyName = StrategyName.LIGHT_ONLY
+    target_strategy_preferences: dict[TargetClass, StrategyName] = Field(default_factory=dict)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    notifications: NotificationConfig = Field(default_factory=NotificationConfig)
+    morning_summary: MorningSummaryConfig = Field(default_factory=MorningSummaryConfig)
     perception: PerceptionConfig = Field(default_factory=PerceptionConfig)
     safety: SafetyConfig
     zones: list[ZoneConfig]

@@ -11,6 +11,7 @@ from raccoon_guardian.domain.models import (
     SafetyDecision,
 )
 from raccoon_guardian.safety.geofence import is_zone_deterrence_enabled
+from raccoon_guardian.safety.hazards import is_hazard_detection
 from raccoon_guardian.safety.human_pet_exclusion import is_human_detection, is_pet_detection
 
 
@@ -93,6 +94,26 @@ class SafetyPolicy:
                 rule="pet_exclusion",
                 allowed=True,
                 message="Target is not classified as pet.",
+            )
+        )
+
+        if is_hazard_detection(detection):
+            trace.append(
+                DecisionTraceEntry(
+                    rule="hazard_hide_mode",
+                    allowed=False,
+                    message=(
+                        "Hazard-class wildlife detected; deterrence denied "
+                        "and safe-park mode requested."
+                    ),
+                )
+            )
+            return SafetyDecision(allowed=False, action_plan=[], trace=trace)
+        trace.append(
+            DecisionTraceEntry(
+                rule="hazard_hide_mode",
+                allowed=True,
+                message="No hazard-class wildlife detected.",
             )
         )
 

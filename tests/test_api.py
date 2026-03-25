@@ -43,3 +43,24 @@ def test_api_summary_endpoint(tmp_path: Path) -> None:
     response = client.get("/summary/nightly?date=2026-01-14")
     assert response.status_code == 200
     assert response.json()["date"] == "2026-01-14"
+    assert "failed_deterrence_events" in response.json()
+
+
+def test_api_strategy_recommendations_and_delivery_endpoints(tmp_path: Path) -> None:
+    config = load_config(Path("configs/simulation.yaml")).model_copy(
+        update={"database_path": tmp_path / "recommendations.db"}
+    )
+    client = TestClient(create_app(config=config))
+
+    recommendations = client.get("/strategies/recommendations")
+    assert recommendations.status_code == 200
+    payload = recommendations.json()
+    assert any(item["target_class"] == "raccoon" for item in payload)
+
+    delivery = client.post("/summary/morning/deliver?date=2026-01-14")
+    assert delivery.status_code == 200
+    assert delivery.json()["delivered"] is False
+
+    escalation = client.post("/alerts/escalate")
+    assert escalation.status_code == 200
+    assert "detail" in escalation.json()

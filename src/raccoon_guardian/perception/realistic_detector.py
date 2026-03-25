@@ -72,6 +72,7 @@ class ExternalModelDetector(Detector):
         "raccoon": TargetClass.RACCOON,
         "cat": TargetClass.CAT,
         "dog": TargetClass.DOG,
+        "bear": TargetClass.BEAR,
         "person": TargetClass.PERSON,
     }
 

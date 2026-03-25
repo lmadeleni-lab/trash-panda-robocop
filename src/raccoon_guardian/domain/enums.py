@@ -23,6 +23,7 @@ class TargetClass(StrEnum):
     RACCOON = "raccoon"
     CAT = "cat"
     DOG = "dog"
+    BEAR = "bear"
     PERSON = "person"
     UNKNOWN = "unknown"
 

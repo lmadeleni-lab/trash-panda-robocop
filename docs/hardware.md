@@ -36,6 +36,24 @@ This project targets an outdoor Raspberry Pi deployment but keeps hardware behin
 
 The real driver files are intentionally conservative. They log intent and leave `TODO` hooks rather than pretending GPIO control already exists.
 
+## Production-Oriented Accessory Set
+
+For a more production-ready fixed-base node, the recommended accessory stack is:
+
+- low-light camera for gate and pool-edge visibility
+- visible strobe light
+- weather-resistant speaker for short cues
+- bounded water spray module
+- small pan head or arm-head preset mount for stationary scan rounds
+- physical kill switch
+- isolated relay or MOSFET driver board
+
+Optional and more experimental:
+
+- diffuse low-force air puff module
+- additional status LEDs for maintenance diagnostics
+- arm-mounted cluster that keeps the camera, light, and nozzle aligned on a fixed base
+
 ## Reusing Existing Raspberry Pi Bot-Class Hardware
 
 If you already have small Raspberry Pi robot parts on hand, many of them can be reused safely here:
@@ -52,6 +70,8 @@ What should *not* be reused blindly:
 - pursuit-oriented motion behaviors
 - unbounded pan or sweep code
 - any hardware setup that points water, light, or sound beyond the intended property boundary
+
+Even when a robot arm or pan assembly is present, the intended motion is limited to small preset repositioning and stationary guard rounds. It should not become a pursuit platform.
 
 The design goal is to reuse commodity Pi ecosystem parts while removing any behavior that could chase, corner, or physically contact wildlife.
 

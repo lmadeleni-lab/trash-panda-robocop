@@ -4,8 +4,21 @@ database_path: data/backyard_gate.db
 simulation_mode: false
 armed_default: true
 selected_strategy: LIGHT_WATER
+target_strategy_preferences:
+  raccoon: LIGHT_WATER
+  unknown: LIGHT_ONLY
 logging:
   level: INFO
+notifications:
+  slack_enabled: false
+  slack_webhook_url:
+  deliver_morning_summary: false
+  escalation_enabled: true
+  escalation_failure_threshold: 2
+morning_summary:
+  enabled: true
+  delivery_hour_local: 7
+  delivery_minute_local: 15
 perception:
   detector_backend: external_model
   min_confidence: 0.55
