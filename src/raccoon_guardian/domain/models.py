@@ -45,6 +45,9 @@ class OutcomeMetrics(BaseModel):
     returned_same_night: bool = False
     false_positive: bool = False
     nuisance_score: float = 0.0
+    possible_droppings_detected: bool = False
+    possible_droppings_zone: ZoneId | None = None
+    possible_droppings_note: str | None = None
 
 
 class DetectionEvent(BaseModel):
@@ -109,6 +112,11 @@ class TargetBreakdown(BaseModel):
     acted_events: int
 
 
+class DroppingsZoneSummary(BaseModel):
+    zone_id: ZoneId
+    flagged_events: int
+
+
 class NightlySummary(BaseModel):
     date: str
     total_events: int
@@ -116,6 +124,7 @@ class NightlySummary(BaseModel):
     denied_events: int
     failed_deterrence_events: int
     target_breakdown: list[TargetBreakdown]
+    droppings_map: list[DroppingsZoneSummary]
     recommended_focus_strategy: StrategyName | None = None
     rankings: list[StrategyScore]
 

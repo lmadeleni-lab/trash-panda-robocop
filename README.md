@@ -44,6 +44,7 @@
 - morning summary generation for daily operator review
 - target-specific deterrence preferences by wildlife type
 - Slack escalation when deterrence repeatedly fails
+- cleanup-oriented droppings flag and hotspot map in nightly summaries
 - simulation-first workflows so the system is useful before hardware is fully attached
 
 ### Accessory and Expansion Concepts

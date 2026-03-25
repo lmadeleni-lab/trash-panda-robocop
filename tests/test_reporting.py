@@ -30,7 +30,12 @@ def test_morning_summary_service_builds_summary_and_noops_without_slack(tmp_path
         state_after=SystemState.COOLDOWN,
         chosen_strategy=StrategyName.LIGHT_WATER,
         decision=SafetyDecision(allowed=True, action_plan=[], trace=[]),
-        outcome=OutcomeMetrics(retreat_detected=True, seconds_to_exit_zone=20.0),
+        outcome=OutcomeMetrics(
+            retreat_detected=True,
+            seconds_to_exit_zone=20.0,
+            possible_droppings_detected=True,
+            possible_droppings_zone=ZoneId.GATE_ENTRY,
+        ),
     )
     repository.record_encounter(record)
     service = MorningSummaryService(
@@ -45,6 +50,7 @@ def test_morning_summary_service_builds_summary_and_noops_without_slack(tmp_path
 
     assert summary.total_events == 1
     assert summary.target_breakdown[0].target_class == TargetClass.RACCOON
+    assert summary.droppings_map[0].zone_id == ZoneId.GATE_ENTRY
     assert result.delivered is False
 
 

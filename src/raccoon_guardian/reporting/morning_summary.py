@@ -40,6 +40,11 @@ class MorningSummaryService:
                 for item in summary.target_breakdown
             )
             lines.append(f"Targets seen: {breakdown}")
+        if summary.droppings_map:
+            droppings = ", ".join(
+                f"{item.zone_id.value}:{item.flagged_events}" for item in summary.droppings_map
+            )
+            lines.append(f"Cleanup map: {droppings}")
         return self.slack_notifier.send_message("\n".join(lines))
 
     def escalate_if_needed(

@@ -37,6 +37,7 @@ Recommended content:
 - target breakdown by species or class
 - acted versus denied events
 - failed deterrence count
+- droppings hotspot map for cleanup follow-up
 - top-performing strategy
 - notable recurrence events
 
@@ -81,4 +82,3 @@ Unsafe chat actions should remain disallowed:
 - arbitrary actuator timing
 - arbitrary movement or sweep commands
 - changes that bypass safety policy
-

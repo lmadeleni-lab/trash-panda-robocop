@@ -21,6 +21,11 @@ def default_night_scenario() -> list[DetectionEvent]:
                 returned_within_10_min=False,
                 returned_same_night=True,
                 nuisance_score=0.4,
+                possible_droppings_detected=True,
+                possible_droppings_zone=ZoneId.GATE_ENTRY,
+                possible_droppings_note=(
+                    "Possible droppings near gate threshold after first deterrence."
+                ),
             ),
         ),
         DetectionEvent(

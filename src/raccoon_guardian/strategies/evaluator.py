@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+from raccoon_guardian.domain.enums import ZoneId
 from raccoon_guardian.domain.models import (
+    DroppingsZoneSummary,
     EncounterRecord,
     NightlySummary,
     OutcomeMetrics,
@@ -68,11 +70,15 @@ class StrategyEvaluator:
         rankings = self.rank(encounters)
         acted_events = sum(1 for encounter in encounters if encounter.decision.allowed)
         target_rollup: dict[str, dict[str, int]] = defaultdict(lambda: {"total": 0, "acted": 0})
+        droppings_rollup: dict[str, int] = defaultdict(int)
         for encounter in encounters:
             key = encounter.detection.target_class.value
             target_rollup[key]["total"] += 1
             if encounter.decision.allowed:
                 target_rollup[key]["acted"] += 1
+            if encounter.outcome and encounter.outcome.possible_droppings_detected:
+                zone = encounter.outcome.possible_droppings_zone or encounter.detection.zone_id
+                droppings_rollup[zone.value] += 1
         target_breakdown = [
             TargetBreakdown(
                 target_class=encounter.detection.target_class,
@@ -86,6 +92,10 @@ class StrategyEvaluator:
         failed_deterrence_events = sum(
             1 for encounter in encounters if self.deterrence_failed(encounter)
         )
+        droppings_map = [
+            DroppingsZoneSummary(zone_id=ZoneId(zone_value), flagged_events=count)
+            for zone_value, count in droppings_rollup.items()
+        ]
         return NightlySummary(
             date=date,
             total_events=len(encounters),
@@ -93,6 +103,7 @@ class StrategyEvaluator:
             denied_events=len(encounters) - acted_events,
             failed_deterrence_events=failed_deterrence_events,
             target_breakdown=list({item.target_class: item for item in target_breakdown}.values()),
+            droppings_map=list({item.zone_id: item for item in droppings_map}.values()),
             recommended_focus_strategy=rankings[0].strategy if rankings else None,
             rankings=rankings,
         )

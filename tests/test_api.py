@@ -44,6 +44,7 @@ def test_api_summary_endpoint(tmp_path: Path) -> None:
     assert response.status_code == 200
     assert response.json()["date"] == "2026-01-14"
     assert "failed_deterrence_events" in response.json()
+    assert "droppings_map" in response.json()
 
 
 def test_api_strategy_recommendations_and_delivery_endpoints(tmp_path: Path) -> None:

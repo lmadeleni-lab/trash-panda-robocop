@@ -92,3 +92,29 @@ def test_strategy_evaluator_summary_includes_failure_and_target_breakdown() -> N
     summary = evaluator.summarize("2026-01-15", encounters)
     assert summary.failed_deterrence_events == 1
     assert summary.target_breakdown[0].target_class == TargetClass.RACCOON
+
+
+def test_strategy_evaluator_summary_includes_droppings_map() -> None:
+    evaluator = StrategyEvaluator()
+    encounters = [
+        EncounterRecord(
+            detection=DetectionEvent(
+                target_detected=True,
+                target_class=TargetClass.RACCOON,
+                confidence=0.95,
+                zone_id=ZoneId.GATE_ENTRY,
+            ),
+            state_before=SystemState.IDLE,
+            state_after=SystemState.COOLDOWN,
+            chosen_strategy=StrategyName.LIGHT_WATER,
+            decision=SafetyDecision(allowed=True, action_plan=[], trace=[]),
+            outcome=OutcomeMetrics(
+                retreat_detected=True,
+                possible_droppings_detected=True,
+                possible_droppings_zone=ZoneId.GATE_ENTRY,
+            ),
+        )
+    ]
+    summary = evaluator.summarize("2026-01-15", encounters)
+    assert summary.droppings_map[0].zone_id == ZoneId.GATE_ENTRY
+    assert summary.droppings_map[0].flagged_events == 1
