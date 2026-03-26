@@ -1,0 +1,33 @@
+{
+  "id": "trash-panda-robocop",
+  "name": "trash-panda Robocop",
+  "version": "0.1.0",
+  "description": "Bounded OpenClaw tools for a Raspberry Pi trash-panda Robocop field node.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "baseUrl",
+      "apiKey"
+    ],
+    "properties": {
+      "baseUrl": {
+        "type": "string",
+        "format": "uri",
+        "description": "Base URL of the Raspberry Pi trash-panda Robocop FastAPI service."
+      },
+      "apiKey": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Same API key configured on the Raspberry Pi service as RG_API_KEY."
+      },
+      "requestTimeoutMs": {
+        "type": "integer",
+        "minimum": 1000,
+        "maximum": 20000,
+        "default": 5000,
+        "description": "HTTP timeout for calls from the Mac mini OpenClaw instance to the Pi."
+      }
+    }
+  }
+}

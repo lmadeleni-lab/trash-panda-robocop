@@ -87,6 +87,15 @@ def test_api_redacts_secrets_and_enforces_api_key(tmp_path: Path) -> None:
     authorized = client.post("/arm", headers={"x-api-key": "topsecret"})
     assert authorized.status_code == 200
 
+    manifest = client.get("/agent/opencclaw/manifest", headers={"x-api-key": "topsecret"})
+    assert manifest.status_code == 200
+    assert manifest.json()["integration_name"] == "trash-panda-robocop"
+
+    briefing = client.get("/agent/opencclaw/briefing", headers={"x-api-key": "topsecret"})
+    assert briefing.status_code == 200
+    assert "system_status" in briefing.json()
+    assert "nightly_summary" in briefing.json()
+
 
 def test_api_status_and_scheduler_endpoints(tmp_path: Path) -> None:
     config = load_config(Path("configs/simulation.yaml")).model_copy(

@@ -123,6 +123,11 @@ class HeatmapCell(BaseModel):
     flagged_events: int
 
 
+class OpenClawOperation(BaseModel):
+    name: str
+    description: str
+
+
 class SchedulerStatus(BaseModel):
     scheduler_enabled: bool
     current_local_time: str
@@ -149,6 +154,13 @@ class SystemStatus(BaseModel):
     morning_summary_enabled: bool
     guard_rounds_enabled: bool
     background_scheduler_enabled: bool
+
+
+class OpenClawManifest(BaseModel):
+    integration_name: str
+    api_version: str
+    operations: list[OpenClawOperation]
+    safety_notes: list[str]
 
 
 class NightlySummary(BaseModel):
@@ -183,3 +195,13 @@ class EncounterRecord(BaseModel):
 
     def as_storage_payload(self) -> dict[str, Any]:
         return self.model_dump(mode="json")
+
+
+class OpenClawBriefing(BaseModel):
+    summary_date: str
+    system_status: SystemStatus
+    scheduler_status: SchedulerStatus
+    recommendation_map: dict[str, str]
+    strategies: list[StrategyDefinition]
+    recent_outcomes: list[EncounterRecord]
+    nightly_summary: NightlySummary

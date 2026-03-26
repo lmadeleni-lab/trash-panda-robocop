@@ -293,6 +293,8 @@ The local FastAPI service includes:
 - `GET /events`
 - `GET /strategies`
 - `GET /strategies/recommendations`
+- `GET /agent/opencclaw/manifest`
+- `GET /agent/opencclaw/briefing`
 - `POST /strategies/select`
 - `GET /summary/nightly`
 - `POST /summary/morning/deliver`
@@ -337,6 +339,14 @@ OpenClaw is treated as an external strategy selector, not a freeform hardware co
 - set the next approved strategy
 - request nightly summaries
 
+The recommended field shape is a `Mac mini` running OpenClaw on the same trusted LAN as a `Raspberry Pi` running the local field node. The Pi keeps the safety boundary and actuator timing local; the Mac mini handles operator chat, strategy review, and bounded tool calls.
+
+The repo now includes:
+
+- bounded OpenClaw agent endpoints on the Pi
+- a Mac mini plugin starter at [integrations/opencclaw/mac-mini-plugin/README.md](/Users/laurent/Development/trash-panda-robocop/integrations/opencclaw/mac-mini-plugin/README.md)
+- a sample OpenClaw config at [integrations/opencclaw/openclaw.sample.json](/Users/laurent/Development/trash-panda-robocop/integrations/opencclaw/openclaw.sample.json)
+
 It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md](/Users/laurent/Development/trash-panda-robocop/docs/opencclaw-integration.md).
 
 ## Documentation Map
@@ -350,6 +360,7 @@ It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md
 - [docs/production-checklist.md](/Users/laurent/Development/trash-panda-robocop/docs/production-checklist.md): pre-deployment checklist
 - [docs/safety-policy.md](/Users/laurent/Development/trash-panda-robocop/docs/safety-policy.md): immutable safety constraints
 - [docs/opencclaw-integration.md](/Users/laurent/Development/trash-panda-robocop/docs/opencclaw-integration.md): bounded external strategy control
+- [integrations/opencclaw/mac-mini-plugin/README.md](/Users/laurent/Development/trash-panda-robocop/integrations/opencclaw/mac-mini-plugin/README.md): local Mac mini OpenClaw plugin setup
 - [docs/strategy-evaluation.md](/Users/laurent/Development/trash-panda-robocop/docs/strategy-evaluation.md): scoring and adaptation loop
 - [CONTRIBUTING.md](/Users/laurent/Development/trash-panda-robocop/CONTRIBUTING.md): contribution guidelines
 - [SECURITY.md](/Users/laurent/Development/trash-panda-robocop/SECURITY.md): security and safety reporting
@@ -361,6 +372,7 @@ It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md
 .
 ├── configs/
 ├── docs/
+├── integrations/
 ├── scripts/
 ├── src/raccoon_guardian/
 ├── tests/

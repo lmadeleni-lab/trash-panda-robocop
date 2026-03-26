@@ -14,7 +14,14 @@ from raccoon_guardian.api.schemas import (
     TestActuationRequest,
 )
 from raccoon_guardian.api.security import require_control_access
-from raccoon_guardian.domain.models import NotificationResult, SchedulerStatus, SystemStatus
+from raccoon_guardian.domain.models import (
+    NotificationResult,
+    OpenClawBriefing,
+    OpenClawManifest,
+    SchedulerStatus,
+    SystemStatus,
+)
+from raccoon_guardian.tools.opencclaw_adapter import OpenCCLawAdapter
 
 router = APIRouter()
 
@@ -123,6 +130,30 @@ def strategy_recommendations(
         RecommendationResponse(target_class=target_class, strategy_name=strategy_name)
         for target_class, strategy_name in container.tools.recommendation_map().items()
     ]
+
+
+@router.get(
+    "/agent/opencclaw/manifest",
+    response_model=OpenClawManifest,
+    dependencies=[Depends(require_control_access)],
+)
+def opencclaw_manifest(
+    container: AppContainer = Depends(get_container),
+) -> OpenClawManifest:
+    return OpenCCLawAdapter(container.tools).get_manifest()
+
+
+@router.get(
+    "/agent/opencclaw/briefing",
+    response_model=OpenClawBriefing,
+    dependencies=[Depends(require_control_access)],
+)
+def opencclaw_briefing(
+    limit: int = Query(default=10, ge=1, le=50),
+    date: str | None = Query(default=None),
+    container: AppContainer = Depends(get_container),
+) -> OpenClawBriefing:
+    return OpenCCLawAdapter(container.tools).get_briefing(limit=limit, local_date=date)
 
 
 @router.get("/summary/nightly")
