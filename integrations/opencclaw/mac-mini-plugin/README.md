@@ -56,3 +56,14 @@ Example:
 - `trash_panda_set_strategy`
 
 It does not expose direct actuation or test-fire tools.
+
+## Pair It With The Agent Pack
+
+For a much cleaner operator experience on the Mac mini, pair this plugin with the workspace pack in [../mac-mini-agent/README.md](/Users/laurent/Development/trash-panda-robocop/integrations/opencclaw/mac-mini-agent/README.md).
+
+That gives OpenClaw:
+
+- a specific operator persona
+- a required `briefing-first` workflow
+- explicit rules for when strategy changes are justified
+- a heartbeat routine for daily review

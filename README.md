@@ -345,6 +345,7 @@ The repo now includes:
 
 - bounded OpenClaw agent endpoints on the Pi
 - a Mac mini plugin starter at [integrations/opencclaw/mac-mini-plugin/README.md](/Users/laurent/Development/trash-panda-robocop/integrations/opencclaw/mac-mini-plugin/README.md)
+- a Mac mini agent prompt pack at [integrations/opencclaw/mac-mini-agent/README.md](/Users/laurent/Development/trash-panda-robocop/integrations/opencclaw/mac-mini-agent/README.md)
 - a sample OpenClaw config at [integrations/opencclaw/openclaw.sample.json](/Users/laurent/Development/trash-panda-robocop/integrations/opencclaw/openclaw.sample.json)
 
 It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md](/Users/laurent/Development/trash-panda-robocop/docs/opencclaw-integration.md).
@@ -360,6 +361,7 @@ It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md
 - [docs/production-checklist.md](/Users/laurent/Development/trash-panda-robocop/docs/production-checklist.md): pre-deployment checklist
 - [docs/safety-policy.md](/Users/laurent/Development/trash-panda-robocop/docs/safety-policy.md): immutable safety constraints
 - [docs/opencclaw-integration.md](/Users/laurent/Development/trash-panda-robocop/docs/opencclaw-integration.md): bounded external strategy control
+- [integrations/opencclaw/mac-mini-agent/README.md](/Users/laurent/Development/trash-panda-robocop/integrations/opencclaw/mac-mini-agent/README.md): Mac mini OpenClaw agent prompt pack
 - [integrations/opencclaw/mac-mini-plugin/README.md](/Users/laurent/Development/trash-panda-robocop/integrations/opencclaw/mac-mini-plugin/README.md): local Mac mini OpenClaw plugin setup
 - [docs/strategy-evaluation.md](/Users/laurent/Development/trash-panda-robocop/docs/strategy-evaluation.md): scoring and adaptation loop
 - [CONTRIBUTING.md](/Users/laurent/Development/trash-panda-robocop/CONTRIBUTING.md): contribution guidelines

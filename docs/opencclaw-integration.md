@@ -85,6 +85,8 @@ The sample plugin and config starter live here:
 
 - `integrations/opencclaw/mac-mini-plugin/`
 - `integrations/opencclaw/openclaw.sample.json`
+- `integrations/opencclaw/mac-mini-agent/`
+- `integrations/opencclaw/openclaw.mac-mini-agent.sample.json`
 
 ### Suggested Pi-side settings
 
@@ -120,6 +122,47 @@ The sample plugin and config starter live here:
   }
 }
 ```
+
+## Operator Prompt Pack
+
+The repo also includes a Mac mini agent workspace pack that gives OpenClaw a disciplined operating posture instead of a generic assistant persona.
+
+Included files:
+
+- `AGENTS.md`: required workflow and decision rules
+- `SOUL.md`: operator-side identity and tone
+- `TOOLS.md`: bounded tool usage guidance
+- `HEARTBEAT.md`: optional recurring review routine
+
+Install it on the Mac mini with:
+
+```bash
+cd integrations/opencclaw/mac-mini-agent
+./install.sh
+```
+
+That installs the workspace pack into `~/.openclaw/workspace-trash-panda-robocop` by default.
+
+Then point OpenClaw at that workspace:
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "workspace": "~/.openclaw/workspace-trash-panda-robocop"
+    }
+  }
+}
+```
+
+## Recommended Agent Behavior
+
+- start with `trash_panda_briefing`
+- summarize evidence before making recommendations
+- prefer de-escalation when simpler strategies are working
+- only call `trash_panda_set_strategy` after giving a reasoned recommendation
+- refuse any request for direct actuator control
+- escalate to a human when hazard wildlife or repeated failures are involved
 
 ## Recommended Operating Pattern
 

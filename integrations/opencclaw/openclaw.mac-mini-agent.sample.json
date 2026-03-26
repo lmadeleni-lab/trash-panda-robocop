@@ -1,0 +1,28 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "~/.openclaw/workspace-trash-panda-robocop"
+    }
+  },
+  "plugins": {
+    "enabled": true,
+    "entries": {
+      "trash-panda-robocop": {
+        "enabled": true,
+        "config": {
+          "baseUrl": "http://trash-panda-pi.local:8000",
+          "apiKey": "replace-with-rg-api-key",
+          "requestTimeoutMs": 5000
+        }
+      }
+    }
+  },
+  "tools": {
+    "allow": [
+      "trash_panda_briefing",
+      "trash_panda_list_strategies",
+      "trash_panda_get_summary",
+      "trash_panda_set_strategy"
+    ]
+  }
+}
