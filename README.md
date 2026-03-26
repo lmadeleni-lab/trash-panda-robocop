@@ -374,6 +374,7 @@ It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md
 - [docs/architecture.md](/Users/laurent/Development/trash-panda-robocop/docs/architecture.md): system and deployment diagrams
 - [docs/hardware.md](/Users/laurent/Development/trash-panda-robocop/docs/hardware.md): Raspberry Pi hardware plan and BOM
 - [docs/mentorpi-starter-kit.md](/Users/laurent/Development/trash-panda-robocop/docs/mentorpi-starter-kit.md): full rover starter-kit guide centered on MentorPi
+- [docs/mentorpi-software-reuse.md](/Users/laurent/Development/trash-panda-robocop/docs/mentorpi-software-reuse.md): what to reuse from the MentorPi software stack
 - [docs/accessories.md](/Users/laurent/Development/trash-panda-robocop/docs/accessories.md): recommended and experimental accessory matrix
 - [docs/deployment.md](/Users/laurent/Development/trash-panda-robocop/docs/deployment.md): Raspberry Pi deployment and service setup
 - [docs/agents.md](/Users/laurent/Development/trash-panda-robocop/docs/agents.md): bounded autonomous review and improvement agents
