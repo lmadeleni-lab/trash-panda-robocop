@@ -5,6 +5,8 @@
 This repository is an early-stage open-source starter kit. Security and safety reports are both welcome, especially for:
 
 - API exposure or auth mistakes
+- trusted-network or local-LAN boundary bypasses
+- unauthorized access to future camera-control or sensor-control surfaces
 - unsafe actuation paths
 - bypasses around human/pet exclusion
 - unsafe hardware assumptions
@@ -30,4 +32,3 @@ If private reporting channels are not yet set up, create a minimal GitHub issue 
 - confirm severity and scope
 - ship a fix or mitigation when practical
 - document public remediation after sensitive details are no longer risky to disclose
-

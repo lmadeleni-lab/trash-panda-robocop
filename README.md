@@ -378,6 +378,7 @@ It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md
 - [docs/accessories.md](/Users/laurent/Development/trash-panda-robocop/docs/accessories.md): recommended and experimental accessory matrix
 - [docs/deployment.md](/Users/laurent/Development/trash-panda-robocop/docs/deployment.md): Raspberry Pi deployment and service setup
 - [docs/agents.md](/Users/laurent/Development/trash-panda-robocop/docs/agents.md): bounded autonomous review and improvement agents
+- [docs/security-architecture.md](/Users/laurent/Development/trash-panda-robocop/docs/security-architecture.md): trusted-network and control-surface protections
 - [docs/operations.md](/Users/laurent/Development/trash-panda-robocop/docs/operations.md): operating modes, guard rounds, summaries, and escalation
 - [docs/production-checklist.md](/Users/laurent/Development/trash-panda-robocop/docs/production-checklist.md): pre-deployment checklist
 - [docs/safety-policy.md](/Users/laurent/Development/trash-panda-robocop/docs/safety-policy.md): immutable safety constraints

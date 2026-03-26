@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, time
+from ipaddress import ip_network
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -22,6 +23,15 @@ class SecurityConfig(BaseModel):
     api_key_enabled: bool = False
     api_key: str | None = None
     allow_unsafe_local_without_key: bool = True
+    trusted_network_required: bool = False
+    trusted_client_cidrs: list[str] = Field(default_factory=list)
+
+    @field_validator("trusted_client_cidrs")
+    @classmethod
+    def validate_trusted_client_cidrs(cls, cidrs: list[str]) -> list[str]:
+        for cidr in cidrs:
+            ip_network(cidr, strict=False)
+        return cidrs
 
 
 class NotificationConfig(BaseModel):

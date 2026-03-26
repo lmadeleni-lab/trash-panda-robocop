@@ -13,7 +13,7 @@ from raccoon_guardian.api.schemas import (
     StrategySelectionRequest,
     TestActuationRequest,
 )
-from raccoon_guardian.api.security import require_control_access
+from raccoon_guardian.api.security import require_control_access, require_sensitive_read_access
 from raccoon_guardian.domain.models import (
     AgentCycleResult,
     AgentReport,
@@ -57,22 +57,38 @@ def ready(container: AppContainer = Depends(get_container)) -> ReadinessResponse
     return ReadinessResponse(status=status, state=container.controller.state.value, checks=checks)
 
 
-@router.get("/status", response_model=SystemStatus)
+@router.get(
+    "/status",
+    response_model=SystemStatus,
+    dependencies=[Depends(require_sensitive_read_access)],
+)
 def status(container: AppContainer = Depends(get_container)) -> SystemStatus:
     return container.tools.system_status()
 
 
-@router.get("/scheduler", response_model=SchedulerStatus)
+@router.get(
+    "/scheduler",
+    response_model=SchedulerStatus,
+    dependencies=[Depends(require_sensitive_read_access)],
+)
 def scheduler_status(container: AppContainer = Depends(get_container)) -> SchedulerStatus:
     return container.tools.scheduler_status()
 
 
-@router.get("/agents/status", response_model=AgentStatus)
+@router.get(
+    "/agents/status",
+    response_model=AgentStatus,
+    dependencies=[Depends(require_sensitive_read_access)],
+)
 def agent_status(container: AppContainer = Depends(get_container)) -> AgentStatus:
     return container.mission_agents.status()
 
 
-@router.get("/agents/reports", response_model=list[AgentReport])
+@router.get(
+    "/agents/reports",
+    response_model=list[AgentReport],
+    dependencies=[Depends(require_sensitive_read_access)],
+)
 def agent_reports(
     limit: int = Query(default=20, ge=1, le=200),
     agent_name: str | None = Query(default=None),
@@ -81,7 +97,7 @@ def agent_reports(
     return container.tools.list_agent_reports(limit=limit, agent_name=agent_name)
 
 
-@router.get("/config")
+@router.get("/config", dependencies=[Depends(require_sensitive_read_access)])
 def get_config(container: AppContainer = Depends(get_container)) -> dict[str, object]:
     return container.config.public_config()
 
@@ -105,7 +121,7 @@ def post_mock_event(
     return record.model_dump(mode="json")
 
 
-@router.get("/events")
+@router.get("/events", dependencies=[Depends(require_sensitive_read_access)])
 def list_events(
     limit: int = Query(default=100, ge=1, le=500),
     container: AppContainer = Depends(get_container),
@@ -115,7 +131,7 @@ def list_events(
     ]
 
 
-@router.get("/strategies")
+@router.get("/strategies", dependencies=[Depends(require_sensitive_read_access)])
 def list_strategies(container: AppContainer = Depends(get_container)) -> dict[str, object]:
     return {
         "selected_strategy": container.controller.selected_strategy,
@@ -139,7 +155,11 @@ def select_strategy(
     return {"selected_strategy": strategy.value}
 
 
-@router.get("/strategies/recommendations", response_model=list[RecommendationResponse])
+@router.get(
+    "/strategies/recommendations",
+    response_model=list[RecommendationResponse],
+    dependencies=[Depends(require_sensitive_read_access)],
+)
 def strategy_recommendations(
     container: AppContainer = Depends(get_container),
 ) -> list[RecommendationResponse]:
@@ -173,7 +193,7 @@ def opencclaw_briefing(
     return OpenCCLawAdapter(container.tools).get_briefing(limit=limit, local_date=date)
 
 
-@router.get("/summary/nightly")
+@router.get("/summary/nightly", dependencies=[Depends(require_sensitive_read_access)])
 def nightly_summary(
     date: str | None = Query(default=None),
     container: AppContainer = Depends(get_container),

@@ -40,6 +40,8 @@ The `backyard-gate-example.yaml` profile enables the background scheduler. That 
 
 Mutating endpoints are now designed to sit behind an `X-API-Key` header when API key protection is enabled.
 
+For field deployments, also enable the trusted-network gate so sensitive routes and future camera-control surfaces are reachable only from approved client CIDR ranges.
+
 Examples:
 
 ```bash
@@ -47,6 +49,8 @@ curl -H "X-API-Key: $RG_API_KEY" http://127.0.0.1:8000/status
 curl -X POST -H "X-API-Key: $RG_API_KEY" http://127.0.0.1:8000/arm
 curl -X POST -H "X-API-Key: $RG_API_KEY" http://127.0.0.1:8000/guard-rounds/run
 ```
+
+See [security-architecture.md](/Users/laurent/Development/trash-panda-robocop/docs/security-architecture.md) for the full intrusion-protection model.
 
 ## systemd
 

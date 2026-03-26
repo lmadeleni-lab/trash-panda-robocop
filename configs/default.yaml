@@ -16,6 +16,13 @@ security:
   api_key_enabled: false
   api_key:
   allow_unsafe_local_without_key: true
+  trusted_network_required: false
+  trusted_client_cidrs:
+    - 127.0.0.1/32
+    - ::1/128
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
 notifications:
   slack_enabled: false
   slack_webhook_url:

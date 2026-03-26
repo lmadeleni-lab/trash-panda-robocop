@@ -143,3 +143,29 @@ def test_api_agent_cycle_execution(tmp_path: Path) -> None:
     reports = client.get("/agents/reports?limit=5")
     assert reports.status_code == 200
     assert len(reports.json()) == 3
+
+
+def test_api_trusted_network_gate_blocks_untrusted_clients(tmp_path: Path) -> None:
+    config = load_config(Path("configs/simulation.yaml")).model_copy(
+        update={"database_path": tmp_path / "trusted-network.db"}
+    )
+    config.security.trusted_network_required = True
+    config.security.trusted_client_cidrs = ["127.0.0.1/32"]
+    config.security.api_key_enabled = True
+    config.security.api_key = "topsecret"
+    config.security.allow_unsafe_local_without_key = False
+
+    untrusted_client = TestClient(create_app(config=config), client=("198.51.100.20", 50000))
+    trusted_client = TestClient(create_app(config=config), client=("127.0.0.1", 50001))
+
+    blocked_status = untrusted_client.get("/status")
+    assert blocked_status.status_code == 403
+
+    blocked_control = untrusted_client.post("/arm", headers={"x-api-key": "topsecret"})
+    assert blocked_control.status_code == 403
+
+    allowed_status = trusted_client.get("/status")
+    assert allowed_status.status_code == 200
+
+    allowed_control = trusted_client.post("/arm", headers={"x-api-key": "topsecret"})
+    assert allowed_control.status_code == 200
