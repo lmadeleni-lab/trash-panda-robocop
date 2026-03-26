@@ -30,7 +30,21 @@
   <a href="#contributing"><strong>Contributing</strong></a>
 </p>
 
+<p align="center">
+  Camera + lidar perception · bounded light / sound / water deterrence · safe mobile sentry patrols ·
+  multi-bot fleet coordination · morning summaries + Slack escalation · Mac mini OpenClaw strategy layer
+</p>
+
 `trash-panda Robocop` is the public-facing identity for the `raccoon_guardian` codebase: a production-minded, safety-first starter kit for a humane perimeter deterrence system aimed at nighttime wildlife entry events near a backyard gate or pool boundary. It is designed for Raspberry Pi class hardware, but the first-class development path is simulation, image capture, and mock hardware so the repo is useful before a camera, pump, light, or speaker is ever attached.
+
+| Hero Highlights | What It Means |
+| --- | --- |
+| Perception | Camera pipeline, frame capture, event snapshots, zone logic, and model-ready detector adapters |
+| Deterrence | Bounded light, short sound cues, brief water spray, optional small pan repositioning, and safe-park / hide mode |
+| Mobility | Guard rounds, sentry patrol paths, stuck recovery, regrouping, and non-pursuit fleet perimeter coverage |
+| Fleet Ops | Shared battery and water telemetry so healthy bots can take over, extend coverage, and maintain the line |
+| Operator Layer | Local API, chat-oriented control concepts, Mac mini OpenClaw integration, and nightly / morning review loops |
+| Debugability | Structured SQLite event logs, rotating JSON runtime logs, decision traces, droppings hotspot summaries, and tests |
 
 ## Product Overview
 
