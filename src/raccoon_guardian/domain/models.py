@@ -171,6 +171,7 @@ class FleetBotHeartbeat(BaseModel):
     current_zone: ZoneId | None = None
     current_path_id: str | None = None
     battery_percent: float = Field(default=100.0, ge=0.0, le=100.0)
+    water_percent: float = Field(default=100.0, ge=0.0, le=100.0)
     mobility_state: MobilityState = MobilityState.NOMINAL
     stuck_score: float = Field(default=0.0, ge=0.0, le=1.0)
     mode: FleetBotMode = FleetBotMode.IDLE
@@ -185,8 +186,14 @@ class FleetBotStatus(BaseModel):
     current_zone: ZoneId | None = None
     current_path_id: str | None = None
     battery_percent: float | None = None
+    water_percent: float | None = None
     mobility_state: MobilityState = MobilityState.NOMINAL
     mode: FleetBotMode = FleetBotMode.IDLE
+    resource_state: str = "telemetry_unknown"
+    can_accept_takeover: bool = False
+    needs_refill: bool = False
+    needs_recharge: bool = False
+    takeover_reason: str | None = None
     last_seen_at: str | None = None
 
 
@@ -196,6 +203,8 @@ class ZoneCoverageAssignment(BaseModel):
     supporting_bot_ids: list[str] = Field(default_factory=list)
     observation_mode: str = "staggered_zone_observation"
     note: str | None = None
+    takeover_from_bot_id: str | None = None
+    resource_note: str | None = None
 
 
 class FleetCoordinationPlan(BaseModel):
@@ -208,6 +217,7 @@ class FleetCoordinationPlan(BaseModel):
     local_path_id: str | None = None
     local_mode: FleetBotMode = FleetBotMode.IDLE
     coordination_notes: list[str] = Field(default_factory=list)
+    resource_notes: list[str] = Field(default_factory=list)
 
 
 class RecoveryAction(BaseModel):

@@ -166,16 +166,26 @@ def test_api_sentry_and_fleet_endpoints(tmp_path: Path) -> None:
             "current_zone": "gate_entry",
             "current_path_id": "sim_perimeter",
             "battery_percent": 88.0,
+            "water_percent": 64.0,
             "mobility_state": "stuck",
             "stuck_score": 0.8,
             "mode": "recovery",
         },
     )
     assert heartbeat.status_code == 200
+    assert heartbeat.json()["water_percent"] == 64.0
 
     recovery = client.get("/fleet/recovery/bot-alpha")
     assert recovery.status_code == 200
     assert recovery.json()["should_regroup"] is True
+
+    fleet_status = client.get("/fleet/status")
+    assert fleet_status.status_code == 200
+    alpha_status = next(
+        bot for bot in fleet_status.json()["bots"] if bot["bot_id"] == "bot-alpha"
+    )
+    assert alpha_status["water_percent"] == 64.0
+    assert alpha_status["resource_state"] == "stuck"
 
     coordination = client.get("/fleet/coordination")
     assert coordination.status_code == 200

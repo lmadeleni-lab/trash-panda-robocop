@@ -82,3 +82,75 @@ def test_fleet_coordination_prefers_hot_zone_coverage(tmp_path: Path) -> None:
 
     assert plan.area_assignments[0].zone_id == ZoneId.GATE_ENTRY
     assert "no multi-bot convergence" in plan.coordination_notes[0]
+
+
+def test_fleet_coordination_hands_off_when_primary_bot_is_resource_drained(
+    tmp_path: Path,
+) -> None:
+    config = load_config(Path("configs/simulation.yaml")).model_copy(
+        update={"database_path": tmp_path / "fleet-handoff.db"}
+    )
+    repository = EventRepository(config.database_path)
+    coordinator = FleetCoordinator(config=config, repository=repository)
+    now = datetime(2026, 1, 15, 3, 0, tzinfo=UTC)
+
+    coordinator.record_heartbeat(
+        FleetBotHeartbeat(
+            bot_id="bot-alpha",
+            current_zone=ZoneId.GATE_ENTRY,
+            battery_percent=82.0,
+            water_percent=8.0,
+            mode=FleetBotMode.PATROL,
+            reported_at=now,
+        )
+    )
+    coordinator.record_heartbeat(
+        FleetBotHeartbeat(
+            bot_id="bot-bravo",
+            current_zone=ZoneId.BACKYARD_PROTECTED,
+            battery_percent=91.0,
+            water_percent=77.0,
+            mode=FleetBotMode.OBSERVE,
+            reported_at=now,
+        )
+    )
+
+    plan = coordinator.compute_plan(now=now)
+    gate_assignment = next(
+        assignment
+        for assignment in plan.area_assignments
+        if assignment.zone_id == ZoneId.GATE_ENTRY
+    )
+
+    assert gate_assignment.primary_bot_id == "bot-bravo"
+    assert gate_assignment.takeover_from_bot_id == "bot-alpha"
+    assert gate_assignment.resource_note is not None
+    assert any("water reserve is critical" in note for note in plan.resource_notes)
+    assert plan.local_mode == FleetBotMode.REGROUP
+
+
+def test_fleet_status_surfaces_shared_resource_levels(tmp_path: Path) -> None:
+    config = load_config(Path("configs/simulation.yaml")).model_copy(
+        update={"database_path": tmp_path / "fleet-status.db"}
+    )
+    repository = EventRepository(config.database_path)
+    coordinator = FleetCoordinator(config=config, repository=repository)
+    now = datetime(2026, 1, 15, 3, 0, tzinfo=UTC)
+
+    coordinator.record_heartbeat(
+        FleetBotHeartbeat(
+            bot_id="bot-alpha",
+            current_zone=ZoneId.GATE_ENTRY,
+            battery_percent=19.0,
+            water_percent=55.0,
+            mode=FleetBotMode.PATROL,
+            reported_at=now,
+        )
+    )
+
+    status = next(item for item in coordinator.fleet_status(now) if item.bot_id == "bot-alpha")
+
+    assert status.water_percent == 55.0
+    assert status.resource_state == "low_battery"
+    assert status.can_accept_takeover is False
+    assert status.needs_recharge is True

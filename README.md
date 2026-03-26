@@ -34,7 +34,7 @@
 
 ## Product Overview
 
-`trash-panda Robocop` is a fixed-base nighttime perimeter robot for gate and pool-edge monitoring. It is designed to notice wildlife entry events, choose from a small catalog of humane deterrence strategies, log what happened, and improve future strategy selection without allowing freeform or unsafe hardware behavior.
+`trash-panda Robocop` is a nighttime perimeter robot for gate and pool-edge monitoring, with both fixed-position and mobile-sentinel deployment paths. It is designed to notice wildlife entry events, choose from a small catalog of humane deterrence strategies, log what happened, and improve future strategy selection without allowing freeform or unsafe hardware behavior.
 
 ### Core Capabilities
 
@@ -45,6 +45,7 @@
 - stationary guard rounds through scheduled scan presets and camera sweeps
 - hazard-aware safe-park or hide mode for detections such as a bear
 - sentry patrol paths and fleet coordination for safe multi-bot zone coverage
+- shared battery and water telemetry so healthier bots can take over or extend perimeter coverage
 - bounded OpenClaw strategy selection and nightly summary review
 - chat-based local control concepts layered on top of the existing API surface
 - morning summary generation for daily operator review
@@ -172,7 +173,7 @@ pie showData
 | Evaluation | SQLite encounter store, nightly ranking, morning summary payloads | richer longitudinal adaptation and dashboards |
 | Notifications | Slack delivery hooks, escalation path, autonomous summary loop | production secret rotation and external alert routing |
 | Mission Agents | nightly review, health monitor, improvement backlog, persistent reports | human-approved implementation of proposed features and skills |
-| Mobility | bounded sentry patrol planning, regrouping, stuck recovery plans | real ROS2 command dispatch and field mobility validation |
+| Mobility | bounded sentry patrol planning, regrouping, stuck recovery plans, resource-aware fleet takeover | real ROS2 command dispatch and field mobility validation |
 
 ## Architecture Summary
 

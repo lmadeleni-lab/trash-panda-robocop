@@ -10,6 +10,8 @@ This version adds a bounded `sentry` layer and a `fleet` coordination layer for 
 - regroup mode
 - staggered multi-angle zone observation
 - bounded stuck recovery planning
+- shared battery and water telemetry
+- automatic perimeter takeover when a peer needs recharge or refill
 
 ## Safety Boundary
 
@@ -55,6 +57,7 @@ A fleet plan assigns:
 - a local bot mode
 - a local path
 - regroup instructions when needed
+- resource handoff notes when one bot extends perimeter coverage for another
 
 ### Recovery Plan
 
@@ -95,6 +98,7 @@ Example features in the sample configs:
 - `backyard_scout`
 - multi-bot area assignments
 - regroup preset
+- battery and water thresholds for takeover decisions
 - bounded motion and recovery timings
 
 ## How Path Selection Works
@@ -103,7 +107,8 @@ For MVP, the local path is selected from:
 
 1. configured bot area assignments
 2. recent encounter pressure by zone
-3. configured patrol paths that best match those zones
+3. recent battery and water telemetry from peer bots
+4. configured patrol paths that best match those zones
 
 The current planner is intentionally simple and auditable. It is designed to be improved over time by the mission-agent review layer without letting agents invent arbitrary movement patterns.
 
@@ -130,6 +135,24 @@ When stuck:
 - recovery is bounded
 - regroup may be requested
 - other bots can continue coverage in their assigned areas
+
+## Shared Resource Handoff
+
+Bots now publish a heartbeat with:
+
+- `battery_percent`
+- `water_percent`
+- `mobility_state`
+- `mode`
+
+The fleet planner uses that telemetry to keep coverage stable:
+
+- low battery bots are deprioritized for perimeter takeover
+- low water bots are deprioritized for deterrence-facing coverage
+- critical battery or water triggers regroup or return-home behavior
+- healthier peers can temporarily extend perimeter coverage for the drained bot
+
+This is still bounded area coverage, not a pursuit handoff. The handoff note is attached to the zone assignment so operators can see exactly why the coverage shifted.
 
 ## MentorPi Fit
 

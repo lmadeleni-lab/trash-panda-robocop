@@ -101,6 +101,25 @@ class FleetBotConfig(BaseModel):
     active: bool = True
 
 
+class FleetResourceConfig(BaseModel):
+    low_battery_threshold_percent: float = Field(default=35.0, ge=0.0, le=100.0)
+    critical_battery_threshold_percent: float = Field(default=15.0, ge=0.0, le=100.0)
+    low_water_threshold_percent: float = Field(default=30.0, ge=0.0, le=100.0)
+    critical_water_threshold_percent: float = Field(default=10.0, ge=0.0, le=100.0)
+    min_battery_for_patrol_percent: float = Field(default=20.0, ge=0.0, le=100.0)
+    min_water_for_deterrence_percent: float = Field(default=15.0, ge=0.0, le=100.0)
+
+    @model_validator(mode="after")
+    def validate_threshold_order(self) -> FleetResourceConfig:
+        if self.critical_battery_threshold_percent > self.low_battery_threshold_percent:
+            msg = "critical battery threshold must be less than or equal to low threshold"
+            raise ValueError(msg)
+        if self.critical_water_threshold_percent > self.low_water_threshold_percent:
+            msg = "critical water threshold must be less than or equal to low threshold"
+            raise ValueError(msg)
+        return self
+
+
 class FleetConfig(BaseModel):
     enabled: bool = False
     local_bot_id: str = "bot-alpha"
@@ -109,6 +128,7 @@ class FleetConfig(BaseModel):
     max_bots_per_zone_observation: int = Field(default=2, ge=1, le=4)
     prohibit_live_target_convergence: bool = True
     bots: list[FleetBotConfig] = Field(default_factory=list)
+    resources: FleetResourceConfig = Field(default_factory=FleetResourceConfig)
 
 
 class RecoveryConfig(BaseModel):

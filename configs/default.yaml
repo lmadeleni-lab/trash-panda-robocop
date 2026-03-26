@@ -75,6 +75,13 @@ fleet:
   regroup_enabled: true
   max_bots_per_zone_observation: 2
   prohibit_live_target_convergence: true
+  resources:
+    low_battery_threshold_percent: 35
+    critical_battery_threshold_percent: 15
+    low_water_threshold_percent: 30
+    critical_water_threshold_percent: 10
+    min_battery_for_patrol_percent: 20
+    min_water_for_deterrence_percent: 15
   bots:
     - bot_id: bot-alpha
       display_name: Trash Panda Alpha
