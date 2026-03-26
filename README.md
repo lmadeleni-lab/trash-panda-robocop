@@ -355,6 +355,7 @@ It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md
 - [README.md](/Users/laurent/Development/trash-panda-robocop/README.md): project overview and quickstart
 - [docs/architecture.md](/Users/laurent/Development/trash-panda-robocop/docs/architecture.md): system and deployment diagrams
 - [docs/hardware.md](/Users/laurent/Development/trash-panda-robocop/docs/hardware.md): Raspberry Pi hardware plan and BOM
+- [docs/mentorpi-starter-kit.md](/Users/laurent/Development/trash-panda-robocop/docs/mentorpi-starter-kit.md): full rover starter-kit guide centered on MentorPi
 - [docs/accessories.md](/Users/laurent/Development/trash-panda-robocop/docs/accessories.md): recommended and experimental accessory matrix
 - [docs/deployment.md](/Users/laurent/Development/trash-panda-robocop/docs/deployment.md): Raspberry Pi deployment and service setup
 - [docs/operations.md](/Users/laurent/Development/trash-panda-robocop/docs/operations.md): operating modes, guard rounds, summaries, and escalation
