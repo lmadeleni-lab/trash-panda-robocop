@@ -145,6 +145,47 @@ def test_api_agent_cycle_execution(tmp_path: Path) -> None:
     assert len(reports.json()) == 3
 
 
+def test_api_sentry_and_fleet_endpoints(tmp_path: Path) -> None:
+    config = load_config(Path("configs/simulation.yaml")).model_copy(
+        update={"database_path": tmp_path / "fleet-api.db"}
+    )
+    config.security.api_key_enabled = True
+    config.security.api_key = "topsecret"
+    config.security.allow_unsafe_local_without_key = False
+    client = TestClient(create_app(config=config))
+
+    sentry = client.get("/sentry/status")
+    assert sentry.status_code == 200
+    assert sentry.json()["enabled"] is True
+
+    heartbeat = client.post(
+        "/fleet/bots/heartbeat",
+        headers={"x-api-key": "topsecret"},
+        json={
+            "bot_id": "bot-alpha",
+            "current_zone": "gate_entry",
+            "current_path_id": "sim_perimeter",
+            "battery_percent": 88.0,
+            "mobility_state": "stuck",
+            "stuck_score": 0.8,
+            "mode": "recovery",
+        },
+    )
+    assert heartbeat.status_code == 200
+
+    recovery = client.get("/fleet/recovery/bot-alpha")
+    assert recovery.status_code == 200
+    assert recovery.json()["should_regroup"] is True
+
+    coordination = client.get("/fleet/coordination")
+    assert coordination.status_code == 200
+    assert "area_assignments" in coordination.json()
+
+    patrol = client.post("/sentry/run", headers={"x-api-key": "topsecret"})
+    assert patrol.status_code == 200
+    assert patrol.json()["path_id"] == "sim_perimeter"
+
+
 def test_api_trusted_network_gate_blocks_untrusted_clients(tmp_path: Path) -> None:
     config = load_config(Path("configs/simulation.yaml")).model_copy(
         update={"database_path": tmp_path / "trusted-network.db"}

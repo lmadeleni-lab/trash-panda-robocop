@@ -18,10 +18,16 @@ from raccoon_guardian.domain.models import (
     AgentCycleResult,
     AgentReport,
     AgentStatus,
+    FleetBotHeartbeat,
+    FleetCoordinationPlan,
+    FleetStatus,
     NotificationResult,
     OpenClawBriefing,
     OpenClawManifest,
+    PatrolExecutionResult,
+    RecoveryPlan,
     SchedulerStatus,
+    SentryStatus,
     SystemStatus,
 )
 from raccoon_guardian.tools.opencclaw_adapter import OpenCCLawAdapter
@@ -73,6 +79,92 @@ def status(container: AppContainer = Depends(get_container)) -> SystemStatus:
 )
 def scheduler_status(container: AppContainer = Depends(get_container)) -> SchedulerStatus:
     return container.tools.scheduler_status()
+
+
+@router.get(
+    "/sentry/status",
+    response_model=SentryStatus,
+    dependencies=[Depends(require_sensitive_read_access)],
+)
+def sentry_status(container: AppContainer = Depends(get_container)) -> SentryStatus:
+    scheduler = container.tools.scheduler_status()
+    return container.fleet.sentry_status(
+        now=datetime.now(UTC),
+        next_patrol_local=scheduler.next_sentry_patrol_local,
+    )
+
+
+@router.post(
+    "/sentry/run",
+    response_model=PatrolExecutionResult,
+    dependencies=[Depends(require_control_access)],
+)
+def run_sentry_patrol(container: AppContainer = Depends(get_container)) -> PatrolExecutionResult:
+    now = datetime.now(UTC)
+    container.scheduler.mark_sentry_patrol_attempt(now)
+    result = container.fleet.run_local_patrol(now=now)
+    container.scheduler.mark_sentry_patrol_run(now)
+    return result
+
+
+@router.get(
+    "/fleet/status",
+    response_model=FleetStatus,
+    dependencies=[Depends(require_sensitive_read_access)],
+)
+def fleet_status(container: AppContainer = Depends(get_container)) -> FleetStatus:
+    plan = container.fleet.compute_plan(now=datetime.now(UTC))
+    return FleetStatus(
+        enabled=container.config.fleet.enabled,
+        local_bot_id=container.config.fleet.local_bot_id,
+        regroup_enabled=container.config.fleet.regroup_enabled,
+        coordination_enabled=container.config.fleet.coordination_enabled,
+        prohibit_live_target_convergence=container.config.fleet.prohibit_live_target_convergence,
+        bots=container.fleet.fleet_status(datetime.now(UTC)),
+        current_plan=plan,
+    )
+
+
+@router.get(
+    "/fleet/coordination",
+    response_model=FleetCoordinationPlan,
+    dependencies=[Depends(require_sensitive_read_access)],
+)
+def fleet_coordination(container: AppContainer = Depends(get_container)) -> FleetCoordinationPlan:
+    return container.fleet.compute_plan(now=datetime.now(UTC))
+
+
+@router.post(
+    "/fleet/bots/heartbeat",
+    response_model=FleetBotHeartbeat,
+    dependencies=[Depends(require_control_access)],
+)
+def fleet_bot_heartbeat(
+    payload: FleetBotHeartbeat,
+    container: AppContainer = Depends(get_container),
+) -> FleetBotHeartbeat:
+    return container.fleet.record_heartbeat(payload)
+
+
+@router.post(
+    "/fleet/regroup",
+    response_model=FleetCoordinationPlan,
+    dependencies=[Depends(require_control_access)],
+)
+def fleet_regroup(
+    reason: str = Query(default="operator_requested"),
+    container: AppContainer = Depends(get_container),
+) -> FleetCoordinationPlan:
+    return container.fleet.request_regroup(reason=reason, now=datetime.now(UTC))
+
+
+@router.get(
+    "/fleet/recovery/{bot_id}",
+    response_model=RecoveryPlan,
+    dependencies=[Depends(require_sensitive_read_access)],
+)
+def fleet_recovery(bot_id: str, container: AppContainer = Depends(get_container)) -> RecoveryPlan:
+    return container.fleet.recovery_plan_for(bot_id)
 
 
 @router.get(

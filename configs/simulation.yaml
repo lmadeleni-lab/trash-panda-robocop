@@ -36,6 +36,60 @@ guard_rounds:
   presets:
     - gate_watch
     - pool_watch
+sentry:
+  enabled: true
+  interval_minutes: 15
+  allow_agent_path_selection: true
+  regroup_preset: dock
+  default_path_id: sim_perimeter
+  patrol_paths:
+    - path_id: sim_perimeter
+      display_name: Sim Perimeter
+      area_tags: [gate, backyard]
+      waypoints:
+        - waypoint_id: sim_gate
+          zone_id: gate_entry
+          observation_preset: gate_watch
+          linear_m_s: 0.12
+          angular_rad_s: 0.0
+          move_duration_s: 1.2
+          dwell_s: 1.5
+          servo_id: 1
+          servo_position: 500
+        - waypoint_id: sim_pool
+          zone_id: backyard_protected
+          observation_preset: pool_watch
+          linear_m_s: 0.1
+          angular_rad_s: 0.2
+          move_duration_s: 1.5
+          dwell_s: 2.0
+          servo_id: 1
+          servo_position: 620
+fleet:
+  enabled: true
+  local_bot_id: bot-alpha
+  coordination_enabled: true
+  regroup_enabled: true
+  max_bots_per_zone_observation: 2
+  prohibit_live_target_convergence: true
+  bots:
+    - bot_id: bot-alpha
+      display_name: Trash Panda Alpha
+      assigned_areas: [gate_entry]
+      home_path_id: sim_perimeter
+      active: true
+    - bot_id: bot-bravo
+      display_name: Trash Panda Bravo
+      assigned_areas: [backyard_protected]
+      home_path_id: sim_perimeter
+      active: true
+recovery:
+  enabled: true
+  wheel_slip_timeout_s: 8
+  max_recovery_attempts: 3
+  reverse_duration_s: 1.0
+  turn_duration_s: 1.0
+  notify_on_recovery: true
 runtime:
   background_scheduler_enabled: false
   scheduler_poll_interval_s: 15

@@ -7,6 +7,7 @@ from raccoon_guardian.config import (
     GuardRoundConfig,
     MorningSummaryConfig,
     SafetyConfig,
+    SentryConfig,
 )
 from raccoon_guardian.control.scheduler import RuntimeScheduler
 
@@ -29,6 +30,7 @@ def test_runtime_scheduler_status_and_next_runs() -> None:
             interval_minutes=30,
             presets=["gate_watch", "pool_watch"],
         ),
+        sentry=SentryConfig(enabled=True, interval_minutes=20),
         agents=AgentConfig(enabled=True, run_interval_minutes=60),
         safety=safety,
     )
@@ -40,6 +42,7 @@ def test_runtime_scheduler_status_and_next_runs() -> None:
     assert snapshot.next_morning_summary_local is not None
     assert snapshot.next_guard_round_local is not None
     assert snapshot.guard_round_presets == ["gate_watch", "pool_watch"]
+    assert snapshot.next_sentry_patrol_local is not None
     assert snapshot.next_agent_cycle_local is not None
 
 
@@ -55,15 +58,18 @@ def test_runtime_scheduler_marks_summary_and_guard_round_runs() -> None:
             enabled=True, delivery_hour_local=7, delivery_minute_local=30
         ),
         guard_rounds=GuardRoundConfig(enabled=True, interval_minutes=30, presets=["gate_watch"]),
+        sentry=SentryConfig(enabled=True, interval_minutes=20),
         agents=AgentConfig(enabled=True, run_interval_minutes=60),
         safety=safety,
     )
     now = datetime(2026, 1, 15, 2, 15, tzinfo=UTC)
     scheduler.mark_guard_round_attempt(now)
     scheduler.mark_morning_summary_attempt(now)
+    scheduler.mark_sentry_patrol_attempt(now)
     scheduler.mark_agent_cycle_attempt(now)
     scheduler.mark_guard_round_run(now)
     scheduler.mark_morning_summary_delivered(now)
+    scheduler.mark_sentry_patrol_run(now)
     scheduler.mark_agent_cycle_run(now)
     snapshot = scheduler.status(now)
 
@@ -71,6 +77,8 @@ def test_runtime_scheduler_marks_summary_and_guard_round_runs() -> None:
     assert snapshot.last_morning_summary_local is not None
     assert snapshot.last_guard_round_attempt_local is not None
     assert snapshot.last_morning_summary_attempt_local is not None
+    assert snapshot.last_sentry_patrol_attempt_local is not None
+    assert snapshot.last_sentry_patrol_local is not None
     assert snapshot.last_agent_cycle_attempt_local is not None
     assert snapshot.last_agent_cycle_local is not None
 
@@ -87,6 +95,7 @@ def test_runtime_scheduler_due_checks_are_once_per_window() -> None:
             enabled=True, delivery_hour_local=7, delivery_minute_local=30
         ),
         guard_rounds=GuardRoundConfig(enabled=True, interval_minutes=30, presets=["gate_watch"]),
+        sentry=SentryConfig(enabled=True, interval_minutes=20),
         agents=AgentConfig(enabled=True, run_interval_minutes=60),
         safety=safety,
     )
@@ -100,6 +109,10 @@ def test_runtime_scheduler_due_checks_are_once_per_window() -> None:
     assert scheduler.should_run_guard_round(now) is True
     scheduler.mark_guard_round_attempt(now)
     assert scheduler.should_run_guard_round(now) is False
+
+    assert scheduler.should_run_sentry_patrol(now) is True
+    scheduler.mark_sentry_patrol_attempt(now)
+    assert scheduler.should_run_sentry_patrol(now) is False
 
     assert scheduler.should_run_agent_cycle(now) is True
     scheduler.mark_agent_cycle_attempt(now)

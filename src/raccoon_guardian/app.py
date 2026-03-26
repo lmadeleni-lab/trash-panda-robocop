@@ -18,6 +18,7 @@ from raccoon_guardian.api.dependencies import AppContainer
 from raccoon_guardian.api.routes import router
 from raccoon_guardian.config import AppConfig, load_config
 from raccoon_guardian.control.controller import Controller
+from raccoon_guardian.control.fleet import FleetCoordinator
 from raccoon_guardian.control.scheduler import RuntimeScheduler
 from raccoon_guardian.logging import configure_logging, get_logger
 from raccoon_guardian.notifications.slack import SlackNotifier
@@ -62,6 +63,19 @@ async def runtime_scheduler_loop(app: FastAPI) -> None:
                     "guard round completed",
                     extra={"context": {"actions_issued": len(results)}},
                 )
+            if container.scheduler.should_run_sentry_patrol(now):
+                container.scheduler.mark_sentry_patrol_attempt(now)
+                patrol = container.fleet.run_local_patrol(now=now)
+                container.scheduler.mark_sentry_patrol_run(now)
+                logger.info(
+                    "sentry patrol planned in runtime loop",
+                    extra={
+                        "context": {
+                            "path_id": patrol.path_id,
+                            "command_count": len(patrol.commands),
+                        }
+                    },
+                )
             if container.scheduler.should_run_agent_cycle(now):
                 container.scheduler.mark_agent_cycle_attempt(now)
                 result = container.mission_agents.run_cycle(now=now)
@@ -90,6 +104,7 @@ def create_app(config: AppConfig | None = None, config_path: str | None = None) 
         timezone_name=app_config.safety.timezone,
         morning_summary=app_config.morning_summary,
         guard_rounds=app_config.guard_rounds,
+        sentry=app_config.sentry,
         agents=app_config.agents,
         safety=app_config.safety,
     )
@@ -113,6 +128,10 @@ def create_app(config: AppConfig | None = None, config_path: str | None = None) 
         config=app_config,
         repository=repository,
         tools=tools,
+    )
+    fleet = FleetCoordinator(
+        config=app_config,
+        repository=repository,
     )
 
     @asynccontextmanager
@@ -181,6 +200,7 @@ def create_app(config: AppConfig | None = None, config_path: str | None = None) 
         slack_notifier=slack_notifier,
         tools=tools,
         mission_agents=mission_agents,
+        fleet=fleet,
     )
     app.include_router(router)
     return app

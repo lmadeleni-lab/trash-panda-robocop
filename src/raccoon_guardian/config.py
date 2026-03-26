@@ -54,6 +54,72 @@ class GuardRoundConfig(BaseModel):
     presets: list[str] = Field(default_factory=lambda: ["gate_watch", "pool_watch"])
 
 
+class PatrolWaypointConfig(BaseModel):
+    waypoint_id: str
+    zone_id: ZoneId
+    observation_preset: str
+    linear_m_s: float = Field(default=0.0, ge=-1.0, le=1.0)
+    angular_rad_s: float = Field(default=0.0, ge=-2.0, le=2.0)
+    move_duration_s: float = Field(default=1.0, gt=0.0, le=10.0)
+    dwell_s: float = Field(default=2.0, ge=0.0, le=60.0)
+    servo_id: int = Field(default=1, ge=1, le=16)
+    servo_position: int = Field(default=500, ge=0, le=1000)
+
+
+class PatrolPathConfig(BaseModel):
+    path_id: str
+    display_name: str
+    area_tags: list[str] = Field(default_factory=list)
+    waypoints: list[PatrolWaypointConfig]
+
+    @field_validator("waypoints")
+    @classmethod
+    def validate_waypoints(
+        cls,
+        waypoints: list[PatrolWaypointConfig],
+    ) -> list[PatrolWaypointConfig]:
+        if not waypoints:
+            msg = "patrol paths must define at least one waypoint"
+            raise ValueError(msg)
+        return waypoints
+
+
+class SentryConfig(BaseModel):
+    enabled: bool = False
+    interval_minutes: int = Field(default=20, ge=5, le=240)
+    allow_agent_path_selection: bool = True
+    regroup_preset: str = "dock"
+    default_path_id: str | None = None
+    patrol_paths: list[PatrolPathConfig] = Field(default_factory=list)
+
+
+class FleetBotConfig(BaseModel):
+    bot_id: str
+    display_name: str
+    assigned_areas: list[ZoneId] = Field(default_factory=list)
+    home_path_id: str | None = None
+    active: bool = True
+
+
+class FleetConfig(BaseModel):
+    enabled: bool = False
+    local_bot_id: str = "bot-alpha"
+    coordination_enabled: bool = True
+    regroup_enabled: bool = True
+    max_bots_per_zone_observation: int = Field(default=2, ge=1, le=4)
+    prohibit_live_target_convergence: bool = True
+    bots: list[FleetBotConfig] = Field(default_factory=list)
+
+
+class RecoveryConfig(BaseModel):
+    enabled: bool = True
+    wheel_slip_timeout_s: float = Field(default=8.0, ge=1.0, le=60.0)
+    max_recovery_attempts: int = Field(default=3, ge=1, le=10)
+    reverse_duration_s: float = Field(default=1.0, gt=0.0, le=5.0)
+    turn_duration_s: float = Field(default=1.0, gt=0.0, le=5.0)
+    notify_on_recovery: bool = True
+
+
 class RuntimeConfig(BaseModel):
     background_scheduler_enabled: bool = False
     scheduler_poll_interval_s: float = Field(default=30.0, ge=5.0, le=300.0)
@@ -125,6 +191,9 @@ class AppConfig(BaseModel):
     notifications: NotificationConfig = Field(default_factory=NotificationConfig)
     morning_summary: MorningSummaryConfig = Field(default_factory=MorningSummaryConfig)
     guard_rounds: GuardRoundConfig = Field(default_factory=GuardRoundConfig)
+    sentry: SentryConfig = Field(default_factory=SentryConfig)
+    fleet: FleetConfig = Field(default_factory=FleetConfig)
+    recovery: RecoveryConfig = Field(default_factory=RecoveryConfig)
     runtime: RuntimeConfig = Field(default_factory=RuntimeConfig)
     agents: AgentConfig = Field(default_factory=AgentConfig)
     perception: PerceptionConfig = Field(default_factory=PerceptionConfig)
@@ -142,6 +211,9 @@ class AppConfig(BaseModel):
 
     def zone_map(self) -> dict[ZoneId, ZoneConfig]:
         return {zone.zone_id: zone for zone in self.zones}
+
+    def path_map(self) -> dict[str, PatrolPathConfig]:
+        return {path.path_id: path for path in self.sentry.patrol_paths}
 
     def public_config(self) -> dict[str, object]:
         payload = self.model_dump(mode="json")

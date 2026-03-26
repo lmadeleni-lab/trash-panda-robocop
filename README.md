@@ -44,6 +44,7 @@
 - optional fixed-base repositioning through small pan or arm-head preset moves, without pursuit
 - stationary guard rounds through scheduled scan presets and camera sweeps
 - hazard-aware safe-park or hide mode for detections such as a bear
+- sentry patrol paths and fleet coordination for safe multi-bot zone coverage
 - bounded OpenClaw strategy selection and nightly summary review
 - chat-based local control concepts layered on top of the existing API surface
 - morning summary generation for daily operator review
@@ -171,6 +172,7 @@ pie showData
 | Evaluation | SQLite encounter store, nightly ranking, morning summary payloads | richer longitudinal adaptation and dashboards |
 | Notifications | Slack delivery hooks, escalation path, autonomous summary loop | production secret rotation and external alert routing |
 | Mission Agents | nightly review, health monitor, improvement backlog, persistent reports | human-approved implementation of proposed features and skills |
+| Mobility | bounded sentry patrol planning, regrouping, stuck recovery plans | real ROS2 command dispatch and field mobility validation |
 
 ## Architecture Summary
 
@@ -295,6 +297,10 @@ The local FastAPI service includes:
 - `GET /health/ready`
 - `GET /status`
 - `GET /scheduler`
+- `GET /sentry/status`
+- `GET /fleet/status`
+- `GET /fleet/coordination`
+- `GET /fleet/recovery/{bot_id}`
 - `GET /agents/status`
 - `GET /agents/reports`
 - `GET /config`
@@ -311,6 +317,9 @@ The local FastAPI service includes:
 - `POST /summary/morning/deliver`
 - `POST /alerts/escalate`
 - `POST /guard-rounds/run`
+- `POST /sentry/run`
+- `POST /fleet/bots/heartbeat`
+- `POST /fleet/regroup`
 - `POST /agents/run`
 - `POST /actuate/test` when explicitly enabled in config
 
@@ -352,6 +361,18 @@ The runtime now includes a bounded mission-agent layer for continuous review:
 
 These agents can generate a persistent improvement backlog, but they do not auto-edit the system or bypass the safety layer. See [docs/agents.md](/Users/laurent/Development/trash-panda-robocop/docs/agents.md).
 
+## Fleet Sentry
+
+The repo now includes a bounded sentry/fleet layer for mobile rover builds:
+
+- scheduled patrol paths
+- multi-bot area coverage
+- regroup mode
+- staggered multi-angle zone observation
+- stuck recovery planning
+
+This remains explicitly non-pursuit. Multiple bots may cover a zone from offset posts, but they may not converge on a live target. See [docs/fleet-sentry.md](/Users/laurent/Development/trash-panda-robocop/docs/fleet-sentry.md).
+
 ## OpenClaw Integration
 
 OpenClaw is treated as an external strategy selector, not a freeform hardware controller. It may only:
@@ -382,6 +403,7 @@ It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md
 - [docs/accessories.md](/Users/laurent/Development/trash-panda-robocop/docs/accessories.md): recommended and experimental accessory matrix
 - [docs/deployment.md](/Users/laurent/Development/trash-panda-robocop/docs/deployment.md): Raspberry Pi deployment and service setup
 - [docs/agents.md](/Users/laurent/Development/trash-panda-robocop/docs/agents.md): bounded autonomous review and improvement agents
+- [docs/fleet-sentry.md](/Users/laurent/Development/trash-panda-robocop/docs/fleet-sentry.md): sentry patrols, fleet coordination, regrouping, and stuck recovery
 - [docs/security-architecture.md](/Users/laurent/Development/trash-panda-robocop/docs/security-architecture.md): trusted-network and control-surface protections
 - [docs/operations.md](/Users/laurent/Development/trash-panda-robocop/docs/operations.md): operating modes, guard rounds, summaries, and escalation
 - [docs/production-checklist.md](/Users/laurent/Development/trash-panda-robocop/docs/production-checklist.md): pre-deployment checklist

@@ -50,3 +50,18 @@ class StrategyName(StrEnum):
     LIGHT_WATER = "LIGHT_WATER"
     SOUND_LIGHT_WATER = "SOUND_LIGHT_WATER"
     LIGHT_SOUND_WATER_PAN = "LIGHT_SOUND_WATER_PAN"
+
+
+class FleetBotMode(StrEnum):
+    IDLE = "idle"
+    PATROL = "patrol"
+    OBSERVE = "observe"
+    REGROUP = "regroup"
+    RECOVERY = "recovery"
+    OFFLINE = "offline"
+
+
+class MobilityState(StrEnum):
+    NOMINAL = "nominal"
+    DEGRADED = "degraded"
+    STUCK = "stuck"

@@ -9,6 +9,8 @@ from pydantic import BaseModel, Field, field_validator
 from raccoon_guardian.domain.enums import (
     ActionType,
     DirectionOfTravel,
+    FleetBotMode,
+    MobilityState,
     StrategyName,
     SystemState,
     TargetClass,
@@ -128,6 +130,100 @@ class OpenClawOperation(BaseModel):
     description: str
 
 
+class PatrolWaypoint(BaseModel):
+    waypoint_id: str
+    zone_id: ZoneId
+    observation_preset: str
+    linear_m_s: float
+    angular_rad_s: float
+    move_duration_s: float
+    dwell_s: float
+    servo_id: int
+    servo_position: int
+
+
+class PatrolPath(BaseModel):
+    path_id: str
+    display_name: str
+    area_tags: list[str]
+    waypoints: list[PatrolWaypoint]
+
+
+class PatrolCommand(BaseModel):
+    step_id: str
+    movement_command: dict[str, Any]
+    pan_command: dict[str, Any]
+    dwell_s: float
+    zone_id: ZoneId
+    observation_preset: str
+
+
+class PatrolExecutionResult(BaseModel):
+    bot_id: str
+    path_id: str
+    created_at: datetime = Field(default_factory=utc_now)
+    commands: list[PatrolCommand]
+    mode: FleetBotMode = FleetBotMode.PATROL
+
+
+class FleetBotHeartbeat(BaseModel):
+    bot_id: str
+    current_zone: ZoneId | None = None
+    current_path_id: str | None = None
+    battery_percent: float = Field(default=100.0, ge=0.0, le=100.0)
+    mobility_state: MobilityState = MobilityState.NOMINAL
+    stuck_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    mode: FleetBotMode = FleetBotMode.IDLE
+    reported_at: datetime = Field(default_factory=utc_now)
+
+
+class FleetBotStatus(BaseModel):
+    bot_id: str
+    display_name: str
+    active: bool
+    assigned_areas: list[ZoneId]
+    current_zone: ZoneId | None = None
+    current_path_id: str | None = None
+    battery_percent: float | None = None
+    mobility_state: MobilityState = MobilityState.NOMINAL
+    mode: FleetBotMode = FleetBotMode.IDLE
+    last_seen_at: str | None = None
+
+
+class ZoneCoverageAssignment(BaseModel):
+    zone_id: ZoneId
+    primary_bot_id: str
+    supporting_bot_ids: list[str] = Field(default_factory=list)
+    observation_mode: str = "staggered_zone_observation"
+    note: str | None = None
+
+
+class FleetCoordinationPlan(BaseModel):
+    created_at: datetime = Field(default_factory=utc_now)
+    regroup_requested: bool = False
+    regroup_reason: str | None = None
+    regroup_preset: str | None = None
+    local_bot_id: str
+    area_assignments: list[ZoneCoverageAssignment]
+    local_path_id: str | None = None
+    local_mode: FleetBotMode = FleetBotMode.IDLE
+    coordination_notes: list[str] = Field(default_factory=list)
+
+
+class RecoveryAction(BaseModel):
+    action: str
+    command: dict[str, Any]
+
+
+class RecoveryPlan(BaseModel):
+    bot_id: str
+    mobility_state: MobilityState
+    should_regroup: bool
+    reason: str
+    actions: list[RecoveryAction] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=utc_now)
+
+
 class SchedulerStatus(BaseModel):
     scheduler_enabled: bool
     current_local_time: str
@@ -143,6 +239,10 @@ class SchedulerStatus(BaseModel):
     next_agent_cycle_local: str | None
     last_agent_cycle_local: str | None
     last_agent_cycle_attempt_local: str | None
+    sentry_enabled: bool
+    next_sentry_patrol_local: str | None
+    last_sentry_patrol_local: str | None
+    last_sentry_patrol_attempt_local: str | None
 
 
 class SystemStatus(BaseModel):
@@ -159,6 +259,8 @@ class SystemStatus(BaseModel):
     guard_rounds_enabled: bool
     background_scheduler_enabled: bool
     agents_enabled: bool
+    sentry_enabled: bool
+    fleet_enabled: bool
 
 
 class OpenClawManifest(BaseModel):
@@ -227,6 +329,25 @@ class AgentStatus(BaseModel):
     available_agents: list[str]
     total_reports: int
     latest_reports: list[AgentReport]
+
+
+class SentryStatus(BaseModel):
+    enabled: bool
+    local_bot_id: str
+    selected_path_id: str | None
+    last_patrol_local: str | None
+    next_patrol_local: str | None
+    available_paths: list[PatrolPath]
+
+
+class FleetStatus(BaseModel):
+    enabled: bool
+    local_bot_id: str
+    regroup_enabled: bool
+    coordination_enabled: bool
+    prohibit_live_target_convergence: bool
+    bots: list[FleetBotStatus]
+    current_plan: FleetCoordinationPlan
 
 
 class EncounterRecord(BaseModel):

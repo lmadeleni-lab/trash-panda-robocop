@@ -106,6 +106,8 @@ class BoundedStrategyTools:
             guard_rounds_enabled=self.controller.config.guard_rounds.enabled,
             background_scheduler_enabled=self.controller.config.runtime.background_scheduler_enabled,
             agents_enabled=self.controller.config.agents.enabled,
+            sentry_enabled=self.controller.config.sentry.enabled,
+            fleet_enabled=self.controller.config.fleet.enabled,
         )
 
     def run_guard_round(self) -> list[ActuationResult]:

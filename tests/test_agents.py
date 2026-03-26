@@ -46,6 +46,7 @@ def test_mission_agents_generate_persistent_reports(tmp_path: Path) -> None:
         timezone_name=config.safety.timezone,
         morning_summary=config.morning_summary,
         guard_rounds=config.guard_rounds,
+        sentry=config.sentry,
         agents=config.agents,
         safety=config.safety,
     )
