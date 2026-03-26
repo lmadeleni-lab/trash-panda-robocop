@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/trash-panda-robocop-hero.png" alt="trash-panda Robocop hero" width="720">
+  <img src="docs/assets/trash-panda-robocop-technical-diagram.png" alt="trash-panda Robocop technical diagram" width="960">
 </p>
 
 <h1 align="center">trash-panda Robocop</h1>
@@ -186,10 +186,6 @@ flowchart LR
 ```
 
 More detail lives in [docs/architecture.md](/Users/laurent/Development/trash-panda-robocop/docs/architecture.md) and [docs/hardware.md](/Users/laurent/Development/trash-panda-robocop/docs/hardware.md).
-
-Official technical system diagram:
-
-![trash-panda Robocop technical diagram](/Users/laurent/Development/trash-panda-robocop/docs/assets/trash-panda-robocop-technical-diagram.png)
 
 ## How a Night Works
 
