@@ -2,6 +2,10 @@
   <img src="docs/assets/trash-panda-robocop-technical-diagram.png" alt="trash-panda Robocop technical diagram" width="960">
 </p>
 
+<p align="center">
+  <img src="docs/assets/trash-panda-robocop-hero.png" alt="trash-panda Robocop hero art" width="720">
+</p>
+
 <h1 align="center">trash-panda Robocop</h1>
 
 <p align="center">
