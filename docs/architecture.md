@@ -8,6 +8,10 @@
 4. Mock or real actuator drivers execute bounded commands
 5. Outcomes are logged and scored for later adaptation
 
+## Technical Diagram
+
+![trash-panda Robocop technical diagram](/Users/laurent/Development/trash-panda-robocop/docs/assets/trash-panda-robocop-technical-diagram.png)
+
 ## Component Diagram
 
 ```mermaid

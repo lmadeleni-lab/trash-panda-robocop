@@ -187,6 +187,10 @@ flowchart LR
 
 More detail lives in [docs/architecture.md](/Users/laurent/Development/trash-panda-robocop/docs/architecture.md) and [docs/hardware.md](/Users/laurent/Development/trash-panda-robocop/docs/hardware.md).
 
+Official technical system diagram:
+
+![trash-panda Robocop technical diagram](/Users/laurent/Development/trash-panda-robocop/docs/assets/trash-panda-robocop-technical-diagram.png)
+
 ## How a Night Works
 
 ```mermaid
