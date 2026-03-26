@@ -9,6 +9,9 @@ target_strategy_preferences:
   unknown: LIGHT_ONLY
 logging:
   level: INFO
+  file_enabled: true
+  file_path: data/logs/trash-panda-robocop-field.log
+  request_logging_enabled: true
 security:
   api_key_enabled: true
   api_key:
@@ -33,6 +36,11 @@ guard_rounds:
 runtime:
   background_scheduler_enabled: true
   scheduler_poll_interval_s: 30
+agents:
+  enabled: true
+  run_interval_minutes: 60
+  auto_strategy_selection: false
+  max_recent_outcomes: 100
 perception:
   detector_backend: external_model
   min_confidence: 0.55

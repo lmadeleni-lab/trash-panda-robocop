@@ -19,9 +19,9 @@ endif
 
 typecheck:
 ifdef UV
-	uv run mypy src
+	uv run mypy src tests
 else
-	mypy src
+	mypy src tests
 endif
 
 test:
@@ -51,4 +51,3 @@ ifdef UV
 else
 	ruff format .
 endif
-

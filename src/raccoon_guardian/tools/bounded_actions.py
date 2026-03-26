@@ -7,6 +7,7 @@ from raccoon_guardian.control.scheduler import RuntimeScheduler
 from raccoon_guardian.domain.enums import StrategyName, TargetClass
 from raccoon_guardian.domain.models import (
     ActuationResult,
+    AgentReport,
     EncounterRecord,
     NightlySummary,
     NotificationResult,
@@ -49,6 +50,11 @@ class BoundedStrategyTools:
 
     def get_recent_outcomes(self, limit: int = 20) -> list[EncounterRecord]:
         return self.repository.recent_outcomes(limit)
+
+    def list_agent_reports(
+        self, limit: int = 20, agent_name: str | None = None
+    ) -> list[AgentReport]:
+        return self.repository.list_agent_reports(limit=limit, agent_name=agent_name)
 
     def list_strategies(self) -> list[StrategyDefinition]:
         return self.strategy_catalog.list_strategies()
@@ -99,6 +105,7 @@ class BoundedStrategyTools:
             morning_summary_enabled=self.controller.config.morning_summary.enabled,
             guard_rounds_enabled=self.controller.config.guard_rounds.enabled,
             background_scheduler_enabled=self.controller.config.runtime.background_scheduler_enabled,
+            agents_enabled=self.controller.config.agents.enabled,
         )
 
     def run_guard_round(self) -> list[ActuationResult]:

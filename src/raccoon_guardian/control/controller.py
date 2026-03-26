@@ -101,6 +101,20 @@ class Controller:
     def process_detection(self, detection: DetectionEvent) -> EncounterRecord:
         self._refresh_cooldown(detection.timestamp)
         state_before = self.state
+        self.logger.info(
+            "processing detection",
+            extra={
+                "context": {
+                    "event_id": detection.event_id,
+                    "target_class": detection.target_class.value,
+                    "zone_id": detection.zone_id.value,
+                    "confidence": detection.confidence,
+                    "is_human": detection.is_human,
+                    "is_pet": detection.is_pet,
+                    "state_before": state_before.value,
+                }
+            },
+        )
         if not self.armed:
             record = EncounterRecord(
                 detection=detection,
@@ -111,6 +125,15 @@ class Controller:
                 outcome=detection.simulated_outcome,
             )
             self.repository.record_encounter(record)
+            self.logger.info(
+                "detection denied because system is disarmed",
+                extra={
+                    "context": {
+                        "event_id": detection.event_id,
+                        "encounter_id": record.encounter_id,
+                    }
+                },
+            )
             return record
 
         try:
@@ -145,6 +168,18 @@ class Controller:
                     outcome=detection.simulated_outcome,
                 )
                 self.repository.record_encounter(record)
+                self.logger.info(
+                    "detection evaluated without actuation",
+                    extra={
+                        "context": {
+                            "event_id": detection.event_id,
+                            "encounter_id": record.encounter_id,
+                            "chosen_strategy": strategy.name.value,
+                            "allowed": False,
+                            "state_after": self.state.value,
+                        }
+                    },
+                )
                 return record
 
             self.state_machine.transition(SystemState.ACTING)
@@ -161,6 +196,18 @@ class Controller:
                 outcome=detection.simulated_outcome,
             )
             self.repository.record_encounter(record)
+            self.logger.info(
+                "detection acted successfully",
+                extra={
+                    "context": {
+                        "event_id": detection.event_id,
+                        "encounter_id": record.encounter_id,
+                        "chosen_strategy": strategy.name.value,
+                        "action_count": len(results),
+                        "state_after": self.state.value,
+                    }
+                },
+            )
             return record
         except Exception as exc:
             self.logger.exception("controller failure")
@@ -203,4 +250,8 @@ class Controller:
                     BoundedAction(action_type=ActionType.PAN, preset=preset, degrees=0)
                 )
             )
+        self.logger.info(
+            "guard round executed",
+            extra={"context": {"presets": presets, "result_count": len(results)}},
+        )
         return results

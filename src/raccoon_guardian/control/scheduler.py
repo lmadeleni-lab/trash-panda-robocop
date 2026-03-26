@@ -4,7 +4,12 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from raccoon_guardian.config import GuardRoundConfig, MorningSummaryConfig, SafetyConfig
+from raccoon_guardian.config import (
+    AgentConfig,
+    GuardRoundConfig,
+    MorningSummaryConfig,
+    SafetyConfig,
+)
 from raccoon_guardian.domain.models import SchedulerStatus
 
 
@@ -21,11 +26,14 @@ class RuntimeScheduler:
     timezone_name: str
     morning_summary: MorningSummaryConfig
     guard_rounds: GuardRoundConfig
+    agents: AgentConfig
     safety: SafetyConfig
     last_morning_summary_at: datetime | None = None
     last_morning_summary_attempt_at: datetime | None = None
     last_guard_round_at: datetime | None = None
     last_guard_round_attempt_at: datetime | None = None
+    last_agent_cycle_at: datetime | None = None
+    last_agent_cycle_attempt_at: datetime | None = None
 
     def _tz(self) -> ZoneInfo:
         return ZoneInfo(self.timezone_name)
@@ -83,12 +91,35 @@ class RuntimeScheduler:
             return True
         return now >= last_attempt + timedelta(minutes=self.guard_rounds.interval_minutes)
 
+    def next_agent_cycle(self, now: datetime) -> datetime | None:
+        if not self.agents.enabled:
+            return None
+        last_run = self.last_agent_cycle_attempt_at or self.last_agent_cycle_at
+        if last_run is None:
+            return self._localize(now)
+        return self._localize(last_run) + timedelta(minutes=self.agents.run_interval_minutes)
+
+    def should_run_agent_cycle(self, now: datetime) -> bool:
+        if not self.agents.enabled:
+            return False
+        last_attempt = self.last_agent_cycle_attempt_at or self.last_agent_cycle_at
+        if last_attempt is None:
+            return True
+        return now >= last_attempt + timedelta(minutes=self.agents.run_interval_minutes)
+
     def mark_guard_round_attempt(self, when: datetime) -> None:
         self.last_guard_round_attempt_at = when
 
     def mark_guard_round_run(self, when: datetime) -> None:
         self.last_guard_round_attempt_at = when
         self.last_guard_round_at = when
+
+    def mark_agent_cycle_attempt(self, when: datetime) -> None:
+        self.last_agent_cycle_attempt_at = when
+
+    def mark_agent_cycle_run(self, when: datetime) -> None:
+        self.last_agent_cycle_attempt_at = when
+        self.last_agent_cycle_at = when
 
     def mark_morning_summary_attempt(self, when: datetime) -> None:
         self.last_morning_summary_attempt_at = when
@@ -100,8 +131,11 @@ class RuntimeScheduler:
     def status(self, now: datetime) -> SchedulerStatus:
         next_summary = self.next_morning_summary(now)
         next_guard_round = self.next_guard_round(now)
+        next_agent_cycle = self.next_agent_cycle(now)
         return SchedulerStatus(
-            scheduler_enabled=self.morning_summary.enabled or self.guard_rounds.enabled,
+            scheduler_enabled=(
+                self.morning_summary.enabled or self.guard_rounds.enabled or self.agents.enabled
+            ),
             current_local_time=self._localize(now).isoformat(),
             next_morning_summary_local=next_summary.isoformat() if next_summary else None,
             last_morning_summary_local=(
@@ -127,4 +161,16 @@ class RuntimeScheduler:
                 else None
             ),
             guard_round_presets=self.guard_rounds.presets,
+            agents_enabled=self.agents.enabled,
+            next_agent_cycle_local=next_agent_cycle.isoformat() if next_agent_cycle else None,
+            last_agent_cycle_local=(
+                self._localize(self.last_agent_cycle_at).isoformat()
+                if self.last_agent_cycle_at
+                else None
+            ),
+            last_agent_cycle_attempt_local=(
+                self._localize(self.last_agent_cycle_attempt_at).isoformat()
+                if self.last_agent_cycle_attempt_at
+                else None
+            ),
         )

@@ -5,7 +5,7 @@ import sqlite3
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from raccoon_guardian.domain.models import EncounterRecord
+from raccoon_guardian.domain.models import AgentReport, EncounterRecord
 from raccoon_guardian.storage.db import init_db
 
 
@@ -75,6 +75,50 @@ class EventRepository:
             record for record in self.list_encounters(limit=limit) if record.outcome is not None
         ]
 
+    def record_agent_report(self, report: AgentReport) -> None:
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT OR REPLACE INTO agent_reports (
+                    report_id, agent_name, summary, findings_json,
+                    proposals_json, metadata_json, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    report.report_id,
+                    report.agent_name,
+                    report.summary,
+                    json.dumps([item.model_dump(mode="json") for item in report.findings]),
+                    json.dumps([item.model_dump(mode="json") for item in report.proposals]),
+                    json.dumps(report.metadata),
+                    report.created_at.isoformat(),
+                ),
+            )
+            connection.commit()
+
+    def list_agent_reports(
+        self,
+        *,
+        limit: int = 100,
+        agent_name: str | None = None,
+    ) -> list[AgentReport]:
+        query = "SELECT * FROM agent_reports"
+        params: list[object] = []
+        if agent_name is not None:
+            query += " WHERE agent_name = ?"
+            params.append(agent_name)
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+        with self._connect() as connection:
+            rows = connection.execute(query, params).fetchall()
+        return [self._hydrate_agent_report(row) for row in rows]
+
+    def count_agent_reports(self) -> int:
+        with self._connect() as connection:
+            row = connection.execute("SELECT COUNT(*) FROM agent_reports").fetchone()
+        assert row is not None
+        return int(row[0])
+
     def _hydrate(self, row: sqlite3.Row) -> EncounterRecord:
         detection_json = row["detection_json"]
         decision_json = row["decision_json"]
@@ -92,3 +136,15 @@ class EventRepository:
             "created_at": row["created_at"],
         }
         return EncounterRecord.model_validate(payload)
+
+    def _hydrate_agent_report(self, row: sqlite3.Row) -> AgentReport:
+        payload = {
+            "report_id": row["report_id"],
+            "agent_name": row["agent_name"],
+            "summary": row["summary"],
+            "findings": json.loads(row["findings_json"]),
+            "proposals": json.loads(row["proposals_json"]),
+            "metadata": json.loads(row["metadata_json"]),
+            "created_at": row["created_at"],
+        }
+        return AgentReport.model_validate(payload)

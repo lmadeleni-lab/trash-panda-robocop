@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def schema_statements() -> list[str]:
@@ -30,4 +30,17 @@ def schema_statements() -> list[str]:
         )
         """,
         "CREATE INDEX IF NOT EXISTS idx_encounters_timestamp ON encounters(timestamp)",
+        """
+        CREATE TABLE IF NOT EXISTS agent_reports (
+            report_id TEXT PRIMARY KEY,
+            agent_name TEXT NOT NULL,
+            summary TEXT NOT NULL,
+            findings_json TEXT NOT NULL,
+            proposals_json TEXT NOT NULL,
+            metadata_json TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+        """,
+        "CREATE INDEX IF NOT EXISTS idx_agent_reports_created_at ON agent_reports(created_at)",
+        "CREATE INDEX IF NOT EXISTS idx_agent_reports_agent_name ON agent_reports(agent_name)",
     ]

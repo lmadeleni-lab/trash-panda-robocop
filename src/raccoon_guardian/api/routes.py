@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -15,6 +15,9 @@ from raccoon_guardian.api.schemas import (
 )
 from raccoon_guardian.api.security import require_control_access
 from raccoon_guardian.domain.models import (
+    AgentCycleResult,
+    AgentReport,
+    AgentStatus,
     NotificationResult,
     OpenClawBriefing,
     OpenClawManifest,
@@ -62,6 +65,20 @@ def status(container: AppContainer = Depends(get_container)) -> SystemStatus:
 @router.get("/scheduler", response_model=SchedulerStatus)
 def scheduler_status(container: AppContainer = Depends(get_container)) -> SchedulerStatus:
     return container.tools.scheduler_status()
+
+
+@router.get("/agents/status", response_model=AgentStatus)
+def agent_status(container: AppContainer = Depends(get_container)) -> AgentStatus:
+    return container.mission_agents.status()
+
+
+@router.get("/agents/reports", response_model=list[AgentReport])
+def agent_reports(
+    limit: int = Query(default=20, ge=1, le=200),
+    agent_name: str | None = Query(default=None),
+    container: AppContainer = Depends(get_container),
+) -> list[AgentReport]:
+    return container.tools.list_agent_reports(limit=limit, agent_name=agent_name)
 
 
 @router.get("/config")
@@ -208,6 +225,19 @@ def run_guard_round(container: AppContainer = Depends(get_container)) -> dict[st
         "count": len(results),
         "results": [result.model_dump(mode="json") for result in results],
     }
+
+
+@router.post(
+    "/agents/run",
+    response_model=AgentCycleResult,
+    dependencies=[Depends(require_control_access)],
+)
+def run_agent_cycle(container: AppContainer = Depends(get_container)) -> AgentCycleResult:
+    now = datetime.now(UTC)
+    container.scheduler.mark_agent_cycle_attempt(now)
+    result = container.mission_agents.run_cycle(now=now)
+    container.scheduler.mark_agent_cycle_run(now)
+    return result
 
 
 @router.post("/actuate/test", dependencies=[Depends(require_control_access)])

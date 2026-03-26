@@ -116,3 +116,30 @@ def test_api_status_and_scheduler_endpoints(tmp_path: Path) -> None:
     assert scheduler.status_code == 200
     assert "guard_round_presets" in scheduler.json()
     assert "last_guard_round_attempt_local" in scheduler.json()
+    assert "next_agent_cycle_local" in scheduler.json()
+
+    agent_status = client.get("/agents/status")
+    assert agent_status.status_code == 200
+    assert "available_agents" in agent_status.json()
+
+    reports = client.get("/agents/reports")
+    assert reports.status_code == 200
+    assert isinstance(reports.json(), list)
+
+
+def test_api_agent_cycle_execution(tmp_path: Path) -> None:
+    config = load_config(Path("configs/simulation.yaml")).model_copy(
+        update={"database_path": tmp_path / "agents.db"}
+    )
+    config.security.api_key_enabled = True
+    config.security.api_key = "topsecret"
+    config.security.allow_unsafe_local_without_key = False
+    client = TestClient(create_app(config=config))
+
+    run = client.post("/agents/run", headers={"x-api-key": "topsecret"})
+    assert run.status_code == 200
+    assert len(run.json()["reports"]) == 3
+
+    reports = client.get("/agents/reports?limit=5")
+    assert reports.status_code == 200
+    assert len(reports.json()) == 3

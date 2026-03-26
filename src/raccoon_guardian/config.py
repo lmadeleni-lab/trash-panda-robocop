@@ -13,6 +13,9 @@ from raccoon_guardian.domain.enums import StrategyName, TargetClass, ZoneId
 
 class LoggingConfig(BaseModel):
     level: str = "INFO"
+    file_enabled: bool = True
+    file_path: Path = Path("data/logs/trash-panda-robocop.log")
+    request_logging_enabled: bool = True
 
 
 class SecurityConfig(BaseModel):
@@ -44,6 +47,13 @@ class GuardRoundConfig(BaseModel):
 class RuntimeConfig(BaseModel):
     background_scheduler_enabled: bool = False
     scheduler_poll_interval_s: float = Field(default=30.0, ge=5.0, le=300.0)
+
+
+class AgentConfig(BaseModel):
+    enabled: bool = True
+    run_interval_minutes: int = Field(default=60, ge=5, le=1440)
+    auto_strategy_selection: bool = False
+    max_recent_outcomes: int = Field(default=50, ge=5, le=500)
 
 
 class PerceptionConfig(BaseModel):
@@ -106,6 +116,7 @@ class AppConfig(BaseModel):
     morning_summary: MorningSummaryConfig = Field(default_factory=MorningSummaryConfig)
     guard_rounds: GuardRoundConfig = Field(default_factory=GuardRoundConfig)
     runtime: RuntimeConfig = Field(default_factory=RuntimeConfig)
+    agents: AgentConfig = Field(default_factory=AgentConfig)
     perception: PerceptionConfig = Field(default_factory=PerceptionConfig)
     safety: SafetyConfig
     zones: list[ZoneConfig]
@@ -152,9 +163,14 @@ def load_config(path: Path | str | None = None) -> AppConfig:
         notifications = raw.setdefault("notifications", {})
         env_api_key = os.getenv("RG_API_KEY")
         env_slack_webhook = os.getenv("RG_SLACK_WEBHOOK_URL")
+        env_log_file = os.getenv("RG_LOG_FILE")
         if env_api_key:
             security["api_key"] = env_api_key
             security["api_key_enabled"] = True
         if env_slack_webhook:
             notifications["slack_webhook_url"] = env_slack_webhook
+        if env_log_file:
+            logging = raw.setdefault("logging", {})
+            logging["file_enabled"] = True
+            logging["file_path"] = env_log_file
     return AppConfig.model_validate(raw)

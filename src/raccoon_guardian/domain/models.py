@@ -139,6 +139,10 @@ class SchedulerStatus(BaseModel):
     last_guard_round_local: str | None
     last_guard_round_attempt_local: str | None
     guard_round_presets: list[str]
+    agents_enabled: bool
+    next_agent_cycle_local: str | None
+    last_agent_cycle_local: str | None
+    last_agent_cycle_attempt_local: str | None
 
 
 class SystemStatus(BaseModel):
@@ -154,6 +158,7 @@ class SystemStatus(BaseModel):
     morning_summary_enabled: bool
     guard_rounds_enabled: bool
     background_scheduler_enabled: bool
+    agents_enabled: bool
 
 
 class OpenClawManifest(BaseModel):
@@ -180,6 +185,48 @@ class NotificationResult(BaseModel):
     delivered: bool
     channel: str
     detail: str
+
+
+class AgentFinding(BaseModel):
+    category: str
+    severity: str
+    title: str
+    detail: str
+
+
+class AgentProposal(BaseModel):
+    title: str
+    priority: str
+    rationale: str
+    tags: list[str] = Field(default_factory=list)
+    implementation_hint: str | None = None
+
+
+class AgentReport(BaseModel):
+    report_id: str = Field(default_factory=lambda: str(uuid4()))
+    agent_name: str
+    created_at: datetime = Field(default_factory=utc_now)
+    summary: str
+    findings: list[AgentFinding] = Field(default_factory=list)
+    proposals: list[AgentProposal] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class AgentCycleResult(BaseModel):
+    executed_at: datetime = Field(default_factory=utc_now)
+    reports: list[AgentReport]
+    auto_strategy_changed: bool = False
+    selected_strategy_after: StrategyName | None = None
+
+
+class AgentStatus(BaseModel):
+    enabled: bool
+    auto_strategy_selection: bool
+    last_cycle_local: str | None
+    next_cycle_local: str | None
+    available_agents: list[str]
+    total_reports: int
+    latest_reports: list[AgentReport]
 
 
 class EncounterRecord(BaseModel):

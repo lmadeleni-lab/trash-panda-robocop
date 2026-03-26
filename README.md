@@ -46,6 +46,8 @@
 - target-specific deterrence preferences by wildlife type
 - Slack escalation when deterrence repeatedly fails
 - cleanup-oriented droppings flag and hotspot map in nightly summaries
+- rotating JSON logs for field debugging
+- bounded mission agents that review performance and generate improvement proposals
 - simulation-first workflows so the system is useful before hardware is fully attached
 
 ### Accessory and Expansion Concepts
@@ -107,6 +109,8 @@ Recent repo upgrades aimed at production-like staging:
 - secret-aware config redaction for public config responses
 - readiness, status, and scheduler endpoints
 - supervised background scheduler for morning summaries and guard rounds
+- rotating file logs plus request-level API logging
+- persistent mission-agent reports stored in SQLite
 - Slack escalation path and morning summary delivery hooks
 - deployment and production-checklist docs for Raspberry Pi staging
 
@@ -162,6 +166,7 @@ pie showData
 | Actuation | bounded interfaces and mock hub, fixed-base safe-park behavior | real GPIO relay, audio, water, and servo drivers |
 | Evaluation | SQLite encounter store, nightly ranking, morning summary payloads | richer longitudinal adaptation and dashboards |
 | Notifications | Slack delivery hooks, escalation path, autonomous summary loop | production secret rotation and external alert routing |
+| Mission Agents | nightly review, health monitor, improvement backlog, persistent reports | human-approved implementation of proposed features and skills |
 
 ## Architecture Summary
 
@@ -286,6 +291,8 @@ The local FastAPI service includes:
 - `GET /health/ready`
 - `GET /status`
 - `GET /scheduler`
+- `GET /agents/status`
+- `GET /agents/reports`
 - `GET /config`
 - `POST /arm`
 - `POST /disarm`
@@ -300,6 +307,7 @@ The local FastAPI service includes:
 - `POST /summary/morning/deliver`
 - `POST /alerts/escalate`
 - `POST /guard-rounds/run`
+- `POST /agents/run`
 - `POST /actuate/test` when explicitly enabled in config
 
 ## Hardware Philosophy
@@ -330,6 +338,16 @@ The hard-coded policy denies or bounds actions when any of the following are tru
 
 Every decision carries an explicit trace so operators can inspect why a strategy was allowed, clamped, or denied.
 
+## Mission Agents
+
+The runtime now includes a bounded mission-agent layer for continuous review:
+
+- `nightly_review`: reads summaries and proposes strategy changes
+- `health_monitor`: checks scheduler, security, and armed state
+- `mission_improvement`: mines recent outcomes for feature and skill candidates
+
+These agents can generate a persistent improvement backlog, but they do not auto-edit the system or bypass the safety layer. See [docs/agents.md](/Users/laurent/Development/trash-panda-robocop/docs/agents.md).
+
 ## OpenClaw Integration
 
 OpenClaw is treated as an external strategy selector, not a freeform hardware controller. It may only:
@@ -358,6 +376,7 @@ It may not issue arbitrary actuator commands. See [docs/opencclaw-integration.md
 - [docs/mentorpi-starter-kit.md](/Users/laurent/Development/trash-panda-robocop/docs/mentorpi-starter-kit.md): full rover starter-kit guide centered on MentorPi
 - [docs/accessories.md](/Users/laurent/Development/trash-panda-robocop/docs/accessories.md): recommended and experimental accessory matrix
 - [docs/deployment.md](/Users/laurent/Development/trash-panda-robocop/docs/deployment.md): Raspberry Pi deployment and service setup
+- [docs/agents.md](/Users/laurent/Development/trash-panda-robocop/docs/agents.md): bounded autonomous review and improvement agents
 - [docs/operations.md](/Users/laurent/Development/trash-panda-robocop/docs/operations.md): operating modes, guard rounds, summaries, and escalation
 - [docs/production-checklist.md](/Users/laurent/Development/trash-panda-robocop/docs/production-checklist.md): pre-deployment checklist
 - [docs/safety-policy.md](/Users/laurent/Development/trash-panda-robocop/docs/safety-policy.md): immutable safety constraints

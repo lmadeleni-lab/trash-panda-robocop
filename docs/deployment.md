@@ -10,6 +10,8 @@ This repository is still an alpha starter kit, but it now includes enough struct
 - Slack webhook configured through environment variables, not committed YAML
 - systemd-managed service for automatic restart
 - background scheduler enabled for autonomous guard rounds and morning summary delivery
+- rotating JSON logs written to `data/logs/`
+- mission-agent cycle enabled for continuous review and backlog generation
 
 ## Required Environment Variables
 
@@ -18,6 +20,7 @@ RG_CONFIG_PATH=configs/backyard-gate-example.yaml
 RG_LOG_LEVEL=INFO
 RG_HOST=0.0.0.0
 RG_PORT=8000
+RG_LOG_FILE=/opt/trash-panda-robocop/data/logs/trash-panda-robocop-field.log
 RG_API_KEY=replace-with-a-long-random-secret
 RG_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 ```

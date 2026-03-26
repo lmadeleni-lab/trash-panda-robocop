@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from fastapi import Request
 
+from raccoon_guardian.agents.service import MissionAgentOrchestrator
 from raccoon_guardian.config import AppConfig
 from raccoon_guardian.control.controller import Controller
 from raccoon_guardian.control.scheduler import RuntimeScheduler
@@ -24,6 +25,7 @@ class AppContainer:
     scheduler: RuntimeScheduler
     slack_notifier: SlackNotifier
     tools: BoundedStrategyTools
+    mission_agents: MissionAgentOrchestrator
 
 
 def get_container(request: Request) -> AppContainer:

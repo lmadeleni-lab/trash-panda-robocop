@@ -25,10 +25,12 @@
 
 - [ ] morning summary enabled and reviewed
 - [ ] `runtime.background_scheduler_enabled` enabled on unattended nodes
+- [ ] `agents.enabled` verified and `/agents/status` reviewed
 - [ ] Slack escalation path tested
 - [ ] droppings cleanup heatmap reviewed in summary output
 - [ ] guard round presets verified for stationary scan coverage
 - [ ] service auto-restart behavior tested
+- [ ] rotating log file path verified under `data/logs/`
 
 ## Safety
 
